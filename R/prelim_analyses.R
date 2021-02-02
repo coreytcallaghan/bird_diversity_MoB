@@ -10,8 +10,8 @@ library(lubridate)
 # read in eBird data and
 # join with modification scores
 # for each eBird checklist
-ebird_data <- readRDS("birds/Data/ebird_data_raw.RDS") %>%
-  left_join(., read_csv("birds/Data/checklists_mod_scores/ebird_samples_mod_scores.csv") %>%
+ebird_data <- readRDS("Data/ebird_data_raw.RDS") %>%
+  left_join(., read_csv("Data/checklists_mod_scores/ebird_samples_mod_scores.csv") %>%
               dplyr::select(first, SAMPLIN) %>%
               rename(ghm=first) %>%
               rename(SAMPLING_EVENT_IDENTIFIER=SAMPLIN), by="SAMPLING_EVENT_IDENTIFIER") %>%
