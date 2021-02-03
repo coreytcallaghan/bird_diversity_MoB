@@ -78,8 +78,21 @@ saveRDS(dat4, "Data/ebird_data_raw.RDS")
 
 # filter to breeding season only
 dat5 <- dat4 %>%
-  mutate(MONTH=month(OBSERVATION_DATE, label=TRUE, abbr=TRUE)) %>%
-  dplyr::filter(MONTH %in% c("May", "Jun", "Jul", "Aug"))
+  mutate(MONTH=month(OBSERVATION_DATE, label=TRUE, abbr=TRUE))
 
-saveRDS(dat5, "Data/ebird_data_breeding_season_only.RDS")
+
+# split data by month
+# and write out each as an RDS
+split_by_month_function <- function(month){
+  
+  temp <- dat5 %>% 
+    dplyr::filter(MONTH==month)
+  
+  saveRDS(temp, paste0("Data/ebird_data_raw_", month, ".RDS"))
+  
+  
+}
+
+lapply(unique(dat5$MONTH), split_by_month_function)
+
 
