@@ -2,8 +2,15 @@
 
 library(dplyr)
 library(sf)
+library(tidyverse)
 
-dat <- readRDS("birds/Data/ebird_data_raw.RDS")
+setwd("Data")
+dat <- c("ebird_data_raw_Apr.RDS", "ebird_data_raw_Aug.RDS", "ebird_data_raw_Dec.RDS", "ebird_data_raw_Feb.RDS",
+         "ebird_data_raw_Jan.RDS", "ebird_data_raw_Jul.RDS", "ebird_data_raw_Jun.RDS", "ebird_data_raw_Mar.RDS",
+         "ebird_data_raw_May.RDS", "ebird_data_raw_Nov.RDS", "ebird_data_raw_Oct.RDS","ebird_data_raw_Sep.RDS") %>%
+  map(readRDS) %>% 
+  bind_rows()
+setwd("..")
 
 # unique points/localities
 
@@ -15,7 +22,7 @@ shape <- dat %>%
 class(shape)
 
 
-st_write(shape, "birds/Data/shapefile_of_ebird_samples/ebird_samples.shp")
+st_write(shape, "Data/shapefile_of_ebird_samples/ebird_samples.shp")
 
 
 
