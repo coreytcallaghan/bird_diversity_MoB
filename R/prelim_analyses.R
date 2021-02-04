@@ -26,7 +26,16 @@ ebird_data <- readRDS("Data/ebird_data_raw_May.RDS") %>%
   left_join(., read_csv("Data/checklists_mod_scores/ebird_samples_mod_scores.csv") %>%
               dplyr::select(first, SAMPLIN) %>%
               rename(ghm=first) %>%
-              rename(SAMPLING_EVENT_IDENTIFIER=SAMPLIN), by="SAMPLING_EVENT_IDENTIFIER")
+              rename(SAMPLING_EVENT_IDENTIFIER=SAMPLIN), by="SAMPLING_EVENT_IDENTIFIER") %>%
+  left_join(., read_csv("Data/Clements-Checklist-v2019-August-2019.csv") %>%
+  dplyr::filter(category=="species") %>%
+  dplyr::select(category, `English name`, `scientific name`, order, family) %>%
+  rename(COMMON_NAME=`English name`,
+         SCIENTIFIC_NAME=`scientific name`)) %>%
+  dplyr::filter(!family %in% c("Strigidae (Owls)", "Tytonidae (Barn-Owls)",
+                               "Stercorariidae (Skuas and Jaegers)", "Alcidae (Auks, Murres, and Puffins)",
+                               "Sulidae (Boobies and Gannets)", "Procellariidae (Shearwaters and Petrels)",
+                               "Hydrobatidae (Northern Storm-Petrels)", "Oceanitidae (Southern Storm-Petrels)"))
 
 
 # total number of checklists in the data
