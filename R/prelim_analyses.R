@@ -14,6 +14,7 @@ library(readr)
 library(lubridate)
 library(sf)
 library(concaveman)
+library(mobr)
 
 # read in eBird data and
 # only read in breeding season eBird data for the time being
@@ -85,7 +86,7 @@ target <- st_geometry(initial)
 
 # can mess with grid size a bit more down the road
 grids <- con_hull %>%
-  st_make_grid(cellsize=.1, square=FALSE)
+  st_make_grid(cellsize=.5, square=FALSE)
 
 # To sf
 grid <- st_sf(index = 1:length(lengths(grids)), grids) # Add index
@@ -116,6 +117,7 @@ sum(is.na(a$grid_id))
 dat_with_grids <- filtered_dat %>%
   left_join(., a, by="SAMPLING_EVENT_IDENTIFIER")
 
+
 #####################################################
 ############## SOME PLAY STUFF FROM COREY ###########
 #####################################################
@@ -124,21 +126,26 @@ dat_with_grids <- filtered_dat %>%
 # can easily add other things like phylo diversity
 # and/or shannon diversity and/or functional diversity etc.
 # just need to pull a few extra things together
-community_dat <- filtered_dat %>%
-  group_by(SAMPLING_EVENT_IDENTIFIER, COMMON_NAME, SCIENTIFIC_NAME) %>%
+community_dat <- dat_with_grids %>%
+  group_by(SAMPLING_EVENT_IDENTIFIER, COMMON_NAME, SCIENTIFIC_NAME,
+           LATITUDE, LONGITUDE, grid_id) %>%
   summarize(OBSERVATION_COUNT=sum(OBSERVATION_COUNT),
             ghm=mean(ghm)) %>%
-  ungroup() %>%
+  ungroup()
+
+metric_dat <- community_dat %>%
   group_by(SAMPLING_EVENT_IDENTIFIER) %>%
   summarize(SPECIES_RICHNESS=length(unique(COMMON_NAME)),
             ABUNDANCE=sum(OBSERVATION_COUNT),
             GHM=mean(ghm)) %>%
   dplyr::filter(complete.cases(GHM))
 
+plot(density(metric_dat$SPECIES_RICHNESS))
+plot(density(log10(metric_dat$ABUNDANCE)))
 
 # raw plot of community level vs
 # modification score
-ggplot(community_dat, aes(x=GHM, y=SPECIES_RICHNESS))+
+ggplot(metric_dat, aes(x=GHM, y=SPECIES_RICHNESS))+
   geom_point()+
   theme_bw()+
   theme(axis.text=element_text(color="black"))+
@@ -147,7 +154,7 @@ ggplot(community_dat, aes(x=GHM, y=SPECIES_RICHNESS))+
   geom_smooth(method="gam")
 
 
-ggplot(community_dat, aes(x=GHM, y=ABUNDANCE))+
+ggplot(metric_dat, aes(x=GHM, y=ABUNDANCE))+
   geom_point()+
   theme_bw()+
   theme(axis.text=element_text(color="black"))+
@@ -157,7 +164,89 @@ ggplot(community_dat, aes(x=GHM, y=ABUNDANCE))+
   geom_smooth(method="gam")
 
 
+# MoB data restructure --------------------------------------------------
 
+comm <- pivot_wider(community_dat, id_cols = 'SAMPLING_EVENT_IDENTIFIER',
+                    names_from = 'SCIENTIFIC_NAME', 
+                    values_from = 'OBSERVATION_COUNT', 
+                    values_fill = 0)
+
+env <- community_dat %>%
+       group_by(SAMPLING_EVENT_IDENTIFIER) %>%
+       summarize(lat = mean(LATITUDE),
+                 long = mean(LONGITUDE),
+                 ghm = mean(ghm),
+                 grid_id = mean(grid_id))
+
+all.equal(comm$SAMPLING_EVENT_IDENTIFIER, env$SAMPLING_EVENT_IDENTIFIER)
+
+comm <- as.data.frame(comm)
+row.names(comm) <- comm$SAMPLING_EVENT_IDENTIFIER
+comm <- comm[ , -1]
+comm[1:5, 1:5]
+
+bird_mob <- make_mob_in(comm, env, coord_names = c('long', 'lat'),
+                        latlong = TRUE)
+bird_mob
+## multi-metric MoB analysis --------------------------------------------------
+
+stats <- get_mob_stats(bird_mob, group_var = 'grid_id', n_perm = 1)
+
+alphas <- stats$samples_stats
+alphas$ghm <- env$ghm[match(alphas$group, env$grid_id)]
+
+gammas <- stats$groups_stats  
+gammas$ghm <- env$ghm[match(gammas$group, env$grid_id)]
+
+# fit linear models
+lm_alpha = alphas %>% group_by(index, effort) %>%
+    do(mod = lm(value ~ ghm, data = .))
+lm_gamma = gammas %>% group_by(index, effort) %>%
+    do(mod = lm(value ~ ghm, data = .))
+
+# get model coefs
+
+mod_coef_alpha = broom::tidy(lm_alpha, mod)
+mod_coef_gamma = broom::tidy(lm_gamma, mod)
+
+# get model summary
+mod_sum_alpha = broom::glance(lm_alpha, mod)
+mod_sum_gamma = broom::glance(lm_gamma, mod)
+
+mob_met = rbind(data.frame(scale = 'alpha', alphas),
+                data.frame(scale = 'gamma', gammas))
+mob_met$index = factor(mob_met$index, 
+                       levels = levels(mob_met$index)[c(2:1, 3:7)])
+
+N1 = mob_met %>%
+     subset(index %in% 'N') %>%
+     ggplot(aes(x = ghm, y = value)) + 
+         geom_point(aes(color = scale)) +
+         geom_smooth(aes(color = scale), method = 'lm', se = F) +
+         labs(x = "GHM", y = "Total abundance (N)")
+ggsave("./Figures/ghm_vs_N.pdf", plot = N1, width = 15, height = 12, 
+       units = "cm")
+
+p1 = mob_met %>% 
+  subset(abs(value) < 1000) %>%
+  subset(index %in% c('S', 'S_n', 'S_PIE')) %>% 
+  ggplot(aes(x = ghm, y = value, col = scale)) + 
+    geom_point() +
+    geom_smooth(method = 'lm', se = F) +
+    facet_wrap(. ~ index, scales = "free")
+
+
+p2 = mob_met %>% 
+    subset(abs(value) < 1000) %>%
+    subset(index %in% c('beta_S', 'beta_S_n', 'beta_S_PIE')) %>% 
+    ggplot(aes(x = ghm, y = value)) + 
+    geom_point() +
+    geom_smooth(method = 'lm', se = F) +
+    facet_wrap(. ~ index, scales = "free")
+
+g = egg::ggarrange(p1, p2)
+ggsave("./Figures/ENS.pdf", plot = g,  width = 20, height = 15,
+       units = "cm")
 
 
 
