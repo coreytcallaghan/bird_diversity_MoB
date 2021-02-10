@@ -38,7 +38,8 @@ ebird_data <- readRDS("Data/ebird_data_raw_May.RDS") %>%
   dplyr::filter(!family %in% c("Strigidae (Owls)", "Tytonidae (Barn-Owls)",
                                "Stercorariidae (Skuas and Jaegers)", "Alcidae (Auks, Murres, and Puffins)",
                                "Sulidae (Boobies and Gannets)", "Procellariidae (Shearwaters and Petrels)",
-                               "Hydrobatidae (Northern Storm-Petrels)", "Oceanitidae (Southern Storm-Petrels)"))
+                               "Hydrobatidae (Northern Storm-Petrels)", "Oceanitidae (Southern Storm-Petrels)")) %>%
+  dplyr::filter(complete.cases(BCR_CODE))
 
 # function to run the analysis
 # split by BCR
@@ -153,9 +154,21 @@ perform_analysis_function <- function(bcr_name, grid_size){
   saveRDS(summary_data, paste0("Intermediate_results/no_bootstrapping/grid_size_", grid_size, "/BCR_", bcr_name, ".RDS"))
 }
 
-# want to do this 32 times - once for each BCR
-length(unique(ebird_data$BCR_CODE))
+# want to do this 30 times - once for each BCR
+# how many BCRs are there with how many records
+bcr_summary <- ebird_data %>%
+  group_by(BCR_CODE) %>%
+  summarize(N=n())
+
+# get rid of BCR_CODE of 0, that must be some weird eBird error
+# is the only thing I can think of
+bcr_list <- ebird_data %>%
+  dplyr::select(BCR_CODE) %>%
+  distinct() %>%
+  dplyr::filter(BCR_CODE != 0) %>%
+  .$BCR_CODE
 
 # apply the function over BCRs
-lapply(unique(ebird_data$BCR_CODE), function(x){perform_analysis_function(x, 0.5)})
+lapply(bcr_list, function(x){perform_analysis_function(x, 0.5)})
+lapply(bcr_list, function(x){perform_analysis_function(x, 0.1)})
 
