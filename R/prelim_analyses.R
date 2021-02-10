@@ -70,7 +70,7 @@ samples_sf <- filtered_dat %>%
 # make a quick convex hull of points to create grids over
 # with a small buffer
 con_hull <- concaveman(samples_sf, concavity=8) %>%
-  st_buffer(0.1)
+  st_buffer(0.4)
 
 # quick check the data match up
 ggplot()+
