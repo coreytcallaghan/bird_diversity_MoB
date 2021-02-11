@@ -9,6 +9,7 @@ library(purrr)
 library(tidyr)
 library(mgcv)
 library(brms)
+library(rstan)
 
 # read in data
 # let's do grid size of 0.1 for now
@@ -42,12 +43,12 @@ ggplot()+
   scale_color_brewer(palette = "Set1")+
   ggtitle("Grid size=0.1")
 
-ex_dat <- dat %>%
+S_alpha_dat <- dat %>%
   dplyr::filter(value<1000) %>%
   dplyr::filter(index=="S") %>%
   dplyr::filter(scale=="alpha")
 
-mod <- mgcv::gam(value ~ s(ghm, k=4), data=ex_dat)
+mod <- mgcv::gam(value ~ s(ghm, k=4), data=S_alpha_dat)
 summary(mod)
 plot(mod, page=1)
 
@@ -55,7 +56,7 @@ plot(mod, page=1)
 # could check distribution as Poisson too
 mod <- mgcv::gam(value ~ s(ghm, k=4) + s(BCR_CODE, bs="re"), 
                  method="REML",
-                 data=ex_dat)
+                 data=S_alpha_dat)
 summary(mod)
 plot(mod, page=1)
 
@@ -65,32 +66,28 @@ plot(mod, page=1)
 # for starters, will do it for 5 BCRs
 # to see if we can get it how we want
 # then run it for all BCRs
-five_bcrs <- ex_dat %>%
-  dplyr::select(BCR_CODE) %>%
-  distinct() %>%
-  sample_n(5)
+options(mc.cores=15)
+rstan_options(auto_write = TRUE)
 
-brm_test_dat <- ex_dat %>%
-  dplyr::filter(BCR_CODE %in% five_bcrs$BCR_CODE)
 
 # try a bayesian model
-m2 <- brm(bf(value ~ s(ghm)+(1|BCR_CODE)),
-          data = brm_test_dat, 
+S_alpha_mod <- brm(bf(value ~ s(ghm, k=5, bs="cr") + (1|BCR_CODE)),
+          data = S_alpha_dat, 
           family = gaussian(), 
-          cores = 4, 
+          cores = 15, 
           seed = 40,
           iter = 4000, 
           warmup = 1000, 
           thin = 10,
           control = list(adapt_delta = 0.99))
 
-plot(m2)
+plot(S_alpha_mod)
 
-msms <- conditional_smooths(m2)
+msms_S_alpha_mod <- conditional_smooths(S_alpha_mod)
 
-plot(msms)
+plot(msms_S_alpha_mod)
 
-pp_check(m2)
+pp_check(m2_S_alpha_mod)
 
 S_BCRs <- ggplot()+
   geom_smooth(data=plot_dat_S %>%
