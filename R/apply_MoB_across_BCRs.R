@@ -45,7 +45,7 @@ ebird_data <- readRDS("Data/ebird_data_raw_May.RDS") %>%
 # split by BCR
 # BCR is used as it helps to account
 # for the 'macro-ecological species pool' essentially
-perform_analysis_function <- function(bcr_name, grid_size){
+perform_analysis_function <- function(bcr_name, grid_size, sample_limit){
   
   message(paste0("Analyzing BCR ", bcr_name))
   
@@ -98,60 +98,95 @@ perform_analysis_function <- function(bcr_name, grid_size){
   dat_with_grids <- filtered_dat %>%
     left_join(., a, by="SAMPLING_EVENT_IDENTIFIER")
   
-  # structure data for MoB approach
-  community_dat <- dat_with_grids %>%
-    group_by(SAMPLING_EVENT_IDENTIFIER, COMMON_NAME, SCIENTIFIC_NAME,
-             LATITUDE, LONGITUDE, grid_id) %>%
-    summarize(OBSERVATION_COUNT=sum(OBSERVATION_COUNT),
-              ghm=mean(ghm)) %>%
-    ungroup()
+  # add a bootstrapping function
+  # to randomly sample checklists at a given number of 'samples'
+  # per grid
+  # this helps to account for the different number of eBird checklists
+  # among grids
+  bootstrap_mobr <- function(draw_number, sample_limit){
+    
+    message(paste0("Analyzing draw number ", draw_number))
+    
+    # randomly sample the number of samples
+    # per grid
+    # and then filter the overall data to that number
+    random_lists <- dat_with_grids %>%
+      dplyr::select(grid_id, SAMPLING_EVENT_IDENTIFIER) %>%
+      group_by(grid_id) %>%
+      mutate(N=length(unique(SAMPLING_EVENT_IDENTIFIER))) %>%
+      dplyr::filter(N>=sample_limit) %>%
+      distinct() %>%
+      group_by(grid_id) %>%
+      sample_n(sample_limit) %>%
+      .$SAMPLING_EVENT_IDENTIFIER
+    
+    dat_with_grids2 <- dat_with_grids %>%
+      ungroup() %>%
+      dplyr::filter(SAMPLING_EVENT_IDENTIFIER %in% random_lists)
+    
+    # structure data for MoB approach
+    community_dat <- dat_with_grids2 %>%
+      group_by(SAMPLING_EVENT_IDENTIFIER, COMMON_NAME, SCIENTIFIC_NAME,
+               LATITUDE, LONGITUDE, grid_id) %>%
+      summarize(OBSERVATION_COUNT=sum(OBSERVATION_COUNT),
+                ghm=mean(ghm)) %>%
+      ungroup()
+    
+    comm <- pivot_wider(community_dat, id_cols = 'SAMPLING_EVENT_IDENTIFIER',
+                        names_from = 'SCIENTIFIC_NAME', 
+                        values_from = 'OBSERVATION_COUNT', 
+                        values_fill = 0)
+    
+    env <- community_dat %>%
+      group_by(SAMPLING_EVENT_IDENTIFIER) %>%
+      summarize(lat = mean(LATITUDE),
+                long = mean(LONGITUDE),
+                ghm = mean(ghm),
+                grid_id = mean(grid_id))
+    
+    all.equal(comm$SAMPLING_EVENT_IDENTIFIER, env$SAMPLING_EVENT_IDENTIFIER)
+    
+    comm <- as.data.frame(comm)
+    row.names(comm) <- comm$SAMPLING_EVENT_IDENTIFIER
+    comm <- comm[ , -1]
+    comm[1:5, 1:5]
+    
+    bird_mob <- make_mob_in(comm, env, coord_names = c('long', 'lat'),
+                            latlong = TRUE)
+    bird_mob
+    
+    ## multi-metric MoB analysis 
+    stats <- get_mob_stats(bird_mob, group_var = 'grid_id', n_perm = 1)
+    
+    alphas <- stats$samples_stats
+    alphas$ghm <- env$ghm[match(alphas$group, env$grid_id)]
+    
+    gammas <- stats$groups_stats  
+    gammas$ghm <- env$ghm[match(gammas$group, env$grid_id)]
+    
+    mob_met <- rbind(data.frame(scale = 'alpha', alphas),
+                     data.frame(scale = 'gamma', gammas))
+    mob_met$index <- factor(mob_met$index, 
+                            levels = levels(mob_met$index)[c(2:1, 3:7)])
+    
+    # prepare final data summary to write out
+    summary_data <- mob_met %>%
+      mutate(BCR_CODE=bcr_name) %>%
+      mutate(total_number_checklists=length(unique(community_dat$SAMPLING_EVENT_IDENTIFIER))) %>%
+      mutate(total_number_species=length(unique(community_dat$COMMON_NAME))) %>%
+      mutate(total_number_observations=nrow(community_dat)) %>%
+      mutate(number_of_grids=length(unique(community_dat$grid_id))) %>%
+      mutate(checklists_per_grid=sample_limit) %>%
+      mutate(draw=draw_number)
+    
+    return(summary_data)
+  }
   
-  comm <- pivot_wider(community_dat, id_cols = 'SAMPLING_EVENT_IDENTIFIER',
-                      names_from = 'SCIENTIFIC_NAME', 
-                      values_from = 'OBSERVATION_COUNT', 
-                      values_fill = 0)
+  boot_results <- bind_rows(lapply(c(1:100), function(x){bootstrap_mobr(x, sample_limit)}))
   
-  env <- community_dat %>%
-    group_by(SAMPLING_EVENT_IDENTIFIER) %>%
-    summarize(lat = mean(LATITUDE),
-              long = mean(LONGITUDE),
-              ghm = mean(ghm),
-              grid_id = mean(grid_id))
-  
-  all.equal(comm$SAMPLING_EVENT_IDENTIFIER, env$SAMPLING_EVENT_IDENTIFIER)
-  
-  comm <- as.data.frame(comm)
-  row.names(comm) <- comm$SAMPLING_EVENT_IDENTIFIER
-  comm <- comm[ , -1]
-  comm[1:5, 1:5]
-  
-  bird_mob <- make_mob_in(comm, env, coord_names = c('long', 'lat'),
-                          latlong = TRUE)
-  bird_mob
-  
-  ## multi-metric MoB analysis 
-  stats <- get_mob_stats(bird_mob, group_var = 'grid_id', n_perm = 1)
-  
-  alphas <- stats$samples_stats
-  alphas$ghm <- env$ghm[match(alphas$group, env$grid_id)]
-  
-  gammas <- stats$groups_stats  
-  gammas$ghm <- env$ghm[match(gammas$group, env$grid_id)]
-  
-  mob_met <- rbind(data.frame(scale = 'alpha', alphas),
-                  data.frame(scale = 'gamma', gammas))
-  mob_met$index <- factor(mob_met$index, 
-                         levels = levels(mob_met$index)[c(2:1, 3:7)])
-  
-  # prepare final data summary to write out
-  summary_data <- mob_met %>%
-    mutate(BCR_CODE=bcr_name) %>%
-    mutate(total_number_checklists=length(unique(community_dat$SAMPLING_EVENT_IDENTIFIER))) %>%
-    mutate(total_number_species=length(unique(community_dat$COMMON_NAME))) %>%
-    mutate(total_number_observations=nrow(community_dat)) %>%
-    mutate(number_of_grids=length(unique(community_dat$grid_id)))
-  
-  saveRDS(summary_data, paste0("Intermediate_results/no_bootstrapping/grid_size_", grid_size, "/BCR_", bcr_name, ".RDS"))
+  saveRDS(boot_results, paste0("Intermediate_results/bootstrapping/grid_size_", 
+                               grid_size, "/", "number_samples_", 
+                               sample_limit, "/BCR_", bcr_name, ".RDS"))
 }
 
 # want to do this 30 times - once for each BCR
@@ -169,6 +204,14 @@ bcr_list <- ebird_data %>%
   .$BCR_CODE
 
 # apply the function over BCRs
-lapply(bcr_list, function(x){perform_analysis_function(x, 0.5)})
-lapply(bcr_list, function(x){perform_analysis_function(x, 0.1)})
+# and different grid sizes and different numbers of samples
+lapply(bcr_list, function(x){perform_analysis_function(x, 0.1, 10)})
+lapply(bcr_list, function(x){perform_analysis_function(x, 0.1, 30)})
+lapply(bcr_list, function(x){perform_analysis_function(x, 0.1, 50)})
+lapply(bcr_list, function(x){perform_analysis_function(x, 0.5, 10)})
+lapply(bcr_list, function(x){perform_analysis_function(x, 0.5, 30)})
+lapply(bcr_list, function(x){perform_analysis_function(x, 0.5, 50)})
+lapply(bcr_list, function(x){perform_analysis_function(x, 1.0, 10)})
+lapply(bcr_list, function(x){perform_analysis_function(x, 1.0, 30)})
+lapply(bcr_list, function(x){perform_analysis_function(x, 1.0, 50)})
 
