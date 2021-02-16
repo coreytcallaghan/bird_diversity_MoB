@@ -248,7 +248,51 @@ g = egg::ggarrange(p1, p2)
 ggsave("./Figures/ENS.pdf", plot = g,  width = 20, height = 15,
        units = "cm")
 
+## multi-scale MoB analysis --------------------------------------------------
+ct <- with(bird_mob$env, tapply(SAMPLING_EVENT_IDENTIFIER, list(grid_id),
+                          function(x) length(unique(x))))
+# drop all grids with less than 10 plots
+bird_mob$env$ct <- ct[match(bird_mob$env$grid_id, names(ct))]
 
+nrow(bird_mob$comm)
 
+ct_min = 50
 
+bird_mob_sub <- subset(bird_mob, ct >= ct_min) 
+
+nrow(bird_mob_sub$comm)
+
+# now take a single random grab of first 10 checklists in each grid cell
+# need to create an index vector 
+uni_grids <- sort(unique(bird_mob_sub$env$grid_id))
+row_indices <- NULL
+for (i in seq_along(uni_grids)) {
+    row_indices <- c(row_indices, 
+                     sample(which(bird_mob_sub$env$grid_id == uni_grids[i]),
+                            size = ct_min))
+}
+
+bird_mob_sub <- subset(bird_mob_sub, row_indices, type = 'integer', drop_levels = TRUE)
+
+dim(bird_mob_sub$comm)
+
+# map once more to see what still is in the analysis
+ggplot()+
+  geom_sf(data=grid_new, fill="transparent")+
+  geom_sf(data=samples_sf)+
+  geom_point(data=bird_mob_sub$spat, aes(x=long, y = lat, col = 'red')) +
+  theme_bw()
+##
+
+# now analyze multiscale pattern 
+deltas <- get_delta_stats(bird_mob_sub, env_var = "ghm", group_var = "grid_id",
+                          type = 'continuous', log_scale = TRUE, n_perm = 19)
+
+#save(deltas, file = './Results/deltas_prelim_50ct.Rdata')
+#load('./Results/deltas_prelim_50ct.Rdata')
+
+pdf("./Figures/multi_scale_prelim_50ct.pdf")                        
+plot(deltas, eff_disp_smooth = TRUE)
+plot(deltas, scale_by = 'indiv')
+dev.off()
 
