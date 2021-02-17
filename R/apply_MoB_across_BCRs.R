@@ -205,13 +205,21 @@ bcr_list <- ebird_data %>%
 
 # apply the function over BCRs
 # and different grid sizes and different numbers of samples
-lapply(bcr_list, function(x){perform_analysis_function(x, 0.1, 10)})
-lapply(bcr_list, function(x){perform_analysis_function(x, 0.1, 30)})
-lapply(bcr_list, function(x){perform_analysis_function(x, 0.1, 50)})
-lapply(bcr_list, function(x){perform_analysis_function(x, 0.5, 10)})
-lapply(bcr_list, function(x){perform_analysis_function(x, 0.5, 30)})
-lapply(bcr_list, function(x){perform_analysis_function(x, 0.5, 50)})
-lapply(bcr_list, function(x){perform_analysis_function(x, 1.0, 10)})
-lapply(bcr_list, function(x){perform_analysis_function(x, 1.0, 30)})
-lapply(bcr_list, function(x){perform_analysis_function(x, 1.0, 50)})
+# in some grid BCRs there are no grid cells that meet the minimum number of checklists
+# necessary for sampling
+# and thus these need to be thrown out
+lapply_with_error <- function(X,FUN,...){    
+  lapply(X, function(x, ...) tryCatch(FUN(x, ...),
+                                      error=function(e) NULL))
+}
+
+lapply_with_error(bcr_list, function(x){perform_analysis_function(x, 0.1, 10)})
+lapply_with_error(bcr_list, function(x){perform_analysis_function(x, 0.1, 30)})
+lapply_with_error(bcr_list, function(x){perform_analysis_function(x, 0.1, 50)})
+lapply_with_error(bcr_list, function(x){perform_analysis_function(x, 0.5, 10)})
+lapply_with_error(bcr_list, function(x){perform_analysis_function(x, 0.5, 30)})
+lapply_with_error(bcr_list, function(x){perform_analysis_function(x, 0.5, 50)})
+lapply_with_error(bcr_list, function(x){perform_analysis_function(x, 1.0, 10)})
+lapply_with_error(bcr_list, function(x){perform_analysis_function(x, 1.0, 30)})
+lapply_with_error(bcr_list, function(x){perform_analysis_function(x, 1.0, 50)})
 
