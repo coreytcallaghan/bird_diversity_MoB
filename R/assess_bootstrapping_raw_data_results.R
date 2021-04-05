@@ -39,7 +39,9 @@ bcr_list <- ebird_data %>%
 # write a function to visualize results for a given index
 # and BCR name
 # at the alpha and gamma scale
-visualize_results <- function(BCR_number, index_name){
+summarize_boot_results <- function(BCR_number, index_name){
+  
+  message(paste0("Summarizing data for BCR ", BCR_number))
   
   dat <- readRDS(paste0("Intermediate_results/bootstrapping/grid_size_0.1/number_samples_10/BCR_", BCR_number, ".RDS")) %>%
     mutate(grid_size=0.1) %>%
@@ -69,29 +71,497 @@ visualize_results <- function(BCR_number, index_name){
   # maybe a better way to do this?
   summary <- temp_dat %>%
     group_by(scale, index, grid_size, checklists_per_grid, ghm) %>%
-    summarize(mean_value=mean(value))
+    summarize(mean_value=mean(value)) %>%
+    mutate(BCR_CODE=BCR_number)
   
-  # plot results
- plot <- ggplot(summary, aes(x=ghm, y=mean_value, 
-                      color=as.factor(grid_size), group=as.factor(grid_size)))+
-    geom_smooth(method="lm", se=FALSE)+
-    theme_bw()+
-    theme(axis.text=element_text(color="black"))+
-    facet_wrap(scale ~ checklists_per_grid, scales="free")+
-    xlab("Global Human Modification")+
-    ylab(paste0(index_name))+
-    ggtitle(paste0("BCR ", BCR_number))+
-    scale_color_brewer(palette = "Set1")+
-    guides(color=guide_legend(title="Grid size"))
- 
- return(plot)
+  return(summary)
   
-}
+ }
 
+# make a fault tolerant lapply
+lapply_with_error <- function(X,FUN,...){    
+  lapply(X, function(x, ...) tryCatch(FUN(x, ...),
+                                      error=function(e) NULL))
+}
 
 # Now can use this function to visualize raw results for different BCRs
 # and different indices
 # haven't bothered looping through everything yet
+all_raw_data_S <- bind_rows(lapply_with_error(bcr_list, function(x){summarize_boot_results(x, "S")}))
+all_raw_data_S_n <- bind_rows(lapply_with_error(bcr_list, function(x){summarize_boot_results(x, "S_n")}))
+all_raw_data_N <- bind_rows(lapply_with_error(bcr_list, function(x){summarize_boot_results(x, "N")}))
+all_raw_data_S_PIE <- bind_rows(lapply_with_error(bcr_list, function(x){summarize_boot_results(x, "S_PIE")}))
+
+# plot results for one BCR to start out with
+# First for "S"
+all_raw_data_S %>%
+  dplyr::filter(BCR_CODE==30) %>%
+  ggplot(., aes(x=ghm, y=mean_value, 
+                    color=as.factor(grid_size), group=as.factor(grid_size)))+
+  geom_smooth(method="lm", se=FALSE)+
+  theme_bw()+
+  theme(axis.text=element_text(color="black"))+
+  facet_wrap(scale ~ checklists_per_grid, scales="free")+
+  xlab("Global Human Modification")+
+  ylab("S")+
+  ggtitle(paste0("BCR 30"))+
+  scale_color_brewer(palette = "Set1")+
+  guides(color=guide_legend(title="Grid size"))
+
+all_raw_data_S %>%
+  dplyr::filter(BCR_CODE==30) %>%
+  ggplot(., aes(x=ghm, y=mean_value, 
+                color=as.factor(grid_size), group=as.factor(grid_size)))+
+  geom_smooth(method="gam", se=FALSE)+
+  theme_bw()+
+  theme(axis.text=element_text(color="black"))+
+  facet_wrap(scale ~ checklists_per_grid, scales="free")+
+  xlab("Global Human Modification")+
+  ylab("S")+
+  ggtitle(paste0("BCR 30"))+
+  scale_color_brewer(palette = "Set1")+
+  guides(color=guide_legend(title="Grid size"))
+
+all_raw_data_S %>%
+  dplyr::filter(BCR_CODE==30) %>%
+  ggplot(., aes(x=ghm, y=mean_value, 
+                color=as.factor(checklists_per_grid), group=as.factor(checklists_per_grid)))+
+  geom_smooth(method="lm", se=FALSE)+
+  theme_bw()+
+  theme(axis.text=element_text(color="black"))+
+  facet_wrap(scale ~ grid_size, scales="free")+
+  xlab("Global Human Modification")+
+  ylab("S")+
+  ggtitle(paste0("BCR 30"))+
+  scale_color_brewer(palette = "Set1")+
+  guides(color=guide_legend(title="Number of checklists"))
+
+all_raw_data_S %>%
+  dplyr::filter(BCR_CODE==30) %>%
+  ggplot(., aes(x=ghm, y=mean_value, 
+                color=as.factor(checklists_per_grid), linetype=as.factor(grid_size)))+
+  geom_smooth(method="lm", se=FALSE)+
+  theme_bw()+
+  theme(axis.text=element_text(color="black"))+
+  facet_wrap(~scale, scales="free")+
+  xlab("Global Human Modification")+
+  ylab("S")+
+  ggtitle(paste0("BCR 30"))+
+  scale_color_brewer(palette = "Set1")+
+  guides(color=guide_legend(title="Number of checklists"))+
+  guides(linetype=guide_legend(title="Grid size"))
+
+
+
+# Now repeat that but for S_n
+all_raw_data_S_n %>%
+  dplyr::filter(BCR_CODE==30) %>%
+  ggplot(., aes(x=ghm, y=mean_value, 
+                color=as.factor(grid_size), group=as.factor(grid_size)))+
+  geom_smooth(method="lm", se=FALSE)+
+  theme_bw()+
+  theme(axis.text=element_text(color="black"))+
+  facet_wrap(scale ~ checklists_per_grid, scales="free")+
+  xlab("Global Human Modification")+
+  ylab("S_n")+
+  ggtitle(paste0("BCR 30"))+
+  scale_color_brewer(palette = "Set1")+
+  guides(color=guide_legend(title="Grid size"))
+
+all_raw_data_S_n %>%
+  dplyr::filter(BCR_CODE==30) %>%
+  ggplot(., aes(x=ghm, y=mean_value, 
+                color=as.factor(grid_size), group=as.factor(grid_size)))+
+  geom_smooth(method="gam", se=FALSE)+
+  theme_bw()+
+  theme(axis.text=element_text(color="black"))+
+  facet_wrap(scale ~ checklists_per_grid, scales="free")+
+  xlab("Global Human Modification")+
+  ylab("S_n")+
+  ggtitle(paste0("BCR 30"))+
+  scale_color_brewer(palette = "Set1")+
+  guides(color=guide_legend(title="Grid size"))
+
+all_raw_data_S_n %>%
+  dplyr::filter(BCR_CODE==30) %>%
+  ggplot(., aes(x=ghm, y=mean_value, 
+                color=as.factor(checklists_per_grid), group=as.factor(checklists_per_grid)))+
+  geom_smooth(method="lm", se=FALSE)+
+  theme_bw()+
+  theme(axis.text=element_text(color="black"))+
+  facet_wrap(scale ~ grid_size, scales="free")+
+  xlab("Global Human Modification")+
+  ylab("S_n")+
+  ggtitle(paste0("BCR 30"))+
+  scale_color_brewer(palette = "Set1")+
+  guides(color=guide_legend(title="Number of checklists"))
+
+all_raw_data_S_n %>%
+  dplyr::filter(BCR_CODE==30) %>%
+  ggplot(., aes(x=ghm, y=mean_value, 
+                color=as.factor(checklists_per_grid), linetype=as.factor(grid_size)))+
+  geom_smooth(method="lm", se=FALSE)+
+  theme_bw()+
+  theme(axis.text=element_text(color="black"))+
+  facet_wrap(~scale, scales="free")+
+  xlab("Global Human Modification")+
+  ylab("S_n")+
+  ggtitle(paste0("BCR 30"))+
+  scale_color_brewer(palette = "Set1")+
+  guides(color=guide_legend(title="Number of checklists"))+
+  guides(linetype=guide_legend(title="Grid size"))
+
+
+# Now repeat that but for S_PIE
+all_raw_data_S_PIE %>%
+  dplyr::filter(BCR_CODE==30) %>%
+  ggplot(., aes(x=ghm, y=mean_value, 
+                color=as.factor(grid_size), group=as.factor(grid_size)))+
+  geom_smooth(method="lm", se=FALSE)+
+  theme_bw()+
+  theme(axis.text=element_text(color="black"))+
+  facet_wrap(scale ~ checklists_per_grid, scales="free")+
+  xlab("Global Human Modification")+
+  ylab("S_PIE")+
+  ggtitle(paste0("BCR 30"))+
+  scale_color_brewer(palette = "Set1")+
+  guides(color=guide_legend(title="Grid size"))
+
+all_raw_data_S_PIE %>%
+  dplyr::filter(BCR_CODE==30) %>%
+  ggplot(., aes(x=ghm, y=mean_value, 
+                color=as.factor(grid_size), group=as.factor(grid_size)))+
+  geom_smooth(method="gam", se=FALSE)+
+  theme_bw()+
+  theme(axis.text=element_text(color="black"))+
+  facet_wrap(scale ~ checklists_per_grid, scales="free")+
+  xlab("Global Human Modification")+
+  ylab("S_PIE")+
+  ggtitle(paste0("BCR 30"))+
+  scale_color_brewer(palette = "Set1")+
+  guides(color=guide_legend(title="Grid size"))
+
+all_raw_data_S_PIE %>%
+  dplyr::filter(BCR_CODE==30) %>%
+  ggplot(., aes(x=ghm, y=mean_value, 
+                color=as.factor(checklists_per_grid), group=as.factor(checklists_per_grid)))+
+  geom_smooth(method="lm", se=FALSE)+
+  theme_bw()+
+  theme(axis.text=element_text(color="black"))+
+  facet_wrap(scale ~ grid_size, scales="free")+
+  xlab("Global Human Modification")+
+  ylab("S_PIE")+
+  ggtitle(paste0("BCR 30"))+
+  scale_color_brewer(palette = "Set1")+
+  guides(color=guide_legend(title="Number of checklists"))
+
+all_raw_data_S_PIE %>%
+  dplyr::filter(BCR_CODE==30) %>%
+  ggplot(., aes(x=ghm, y=mean_value, 
+                color=as.factor(checklists_per_grid), linetype=as.factor(grid_size)))+
+  geom_smooth(method="lm", se=FALSE)+
+  theme_bw()+
+  theme(axis.text=element_text(color="black"))+
+  facet_wrap(~scale, scales="free")+
+  xlab("Global Human Modification")+
+  ylab("S_PIE")+
+  ggtitle(paste0("BCR 30"))+
+  scale_color_brewer(palette = "Set1")+
+  guides(color=guide_legend(title="Number of checklists"))+
+  guides(linetype=guide_legend(title="Grid size"))
+
+# ONE MORE TIME, but for N
+# Now repeat that but for S_PIE
+all_raw_data_N %>%
+  dplyr::filter(BCR_CODE==30) %>%
+  ggplot(., aes(x=ghm, y=mean_value, 
+                color=as.factor(grid_size), group=as.factor(grid_size)))+
+  geom_smooth(method="lm", se=FALSE)+
+  theme_bw()+
+  theme(axis.text=element_text(color="black"))+
+  facet_wrap(scale ~ checklists_per_grid, scales="free")+
+  xlab("Global Human Modification")+
+  ylab("N")+
+  ggtitle(paste0("BCR 30"))+
+  scale_color_brewer(palette = "Set1")+
+  guides(color=guide_legend(title="Grid size"))
+
+all_raw_data_N %>%
+  dplyr::filter(BCR_CODE==30) %>%
+  ggplot(., aes(x=ghm, y=mean_value, 
+                color=as.factor(grid_size), group=as.factor(grid_size)))+
+  geom_smooth(method="gam", se=FALSE)+
+  theme_bw()+
+  theme(axis.text=element_text(color="black"))+
+  facet_wrap(scale ~ checklists_per_grid, scales="free")+
+  xlab("Global Human Modification")+
+  ylab("N")+
+  ggtitle(paste0("BCR 30"))+
+  scale_color_brewer(palette = "Set1")+
+  guides(color=guide_legend(title="Grid size"))
+
+all_raw_data_N %>%
+  dplyr::filter(BCR_CODE==30) %>%
+  ggplot(., aes(x=ghm, y=mean_value, 
+                color=as.factor(checklists_per_grid), group=as.factor(checklists_per_grid)))+
+  geom_smooth(method="lm", se=FALSE)+
+  theme_bw()+
+  theme(axis.text=element_text(color="black"))+
+  facet_wrap(scale ~ grid_size, scales="free")+
+  xlab("Global Human Modification")+
+  ylab("N")+
+  ggtitle(paste0("BCR 30"))+
+  scale_color_brewer(palette = "Set1")+
+  guides(color=guide_legend(title="Number of checklists"))
+
+all_raw_data_N %>%
+  dplyr::filter(BCR_CODE==30) %>%
+  ggplot(., aes(x=ghm, y=mean_value, 
+                color=as.factor(checklists_per_grid), linetype=as.factor(grid_size)))+
+  geom_smooth(method="lm", se=FALSE)+
+  theme_bw()+
+  theme(axis.text=element_text(color="black"))+
+  facet_wrap(~scale, scales="free")+
+  xlab("Global Human Modification")+
+  ylab("N")+
+  ggtitle(paste0("BCR 30"))+
+  scale_color_brewer(palette = "Set1")+
+  guides(color=guide_legend(title="Number of checklists"))+
+  guides(linetype=guide_legend(title="Grid size"))
+
+
+
+###################################################
+###################################################
+########### PLOT RESULTS FOR ALL BCRS at once #####
+###################################################
+# plot results for one BCR to start out with
+# First for "S"
+all_raw_data_S %>%
+  ggplot(., aes(x=ghm, y=mean_value, 
+                color=as.factor(grid_size), group=as.factor(grid_size)))+
+  geom_smooth(method="lm", se=FALSE)+
+  theme_bw()+
+  theme(axis.text=element_text(color="black"))+
+  facet_wrap(scale ~ checklists_per_grid, scales="free")+
+  xlab("Global Human Modification")+
+  ylab("S")+
+  ggtitle(paste0("Across all BCRs"))+
+  scale_color_brewer(palette = "Set1")+
+  guides(color=guide_legend(title="Grid size"))
+
+all_raw_data_S %>%
+  ggplot(., aes(x=ghm, y=mean_value, 
+                color=as.factor(grid_size), group=as.factor(grid_size)))+
+  geom_smooth(method="gam", se=FALSE)+
+  theme_bw()+
+  theme(axis.text=element_text(color="black"))+
+  facet_wrap(scale ~ checklists_per_grid, scales="free")+
+  xlab("Global Human Modification")+
+  ylab("S")+
+  ggtitle(paste0("Across all BCRs"))+
+  scale_color_brewer(palette = "Set1")+
+  guides(color=guide_legend(title="Grid size"))
+
+all_raw_data_S %>%
+  ggplot(., aes(x=ghm, y=mean_value, 
+                color=as.factor(checklists_per_grid), group=as.factor(checklists_per_grid)))+
+  geom_smooth(method="lm", se=FALSE)+
+  theme_bw()+
+  theme(axis.text=element_text(color="black"))+
+  facet_wrap(scale ~ grid_size, scales="free")+
+  xlab("Global Human Modification")+
+  ylab("S")+
+  ggtitle(paste0("Across all BCRs"))+
+  scale_color_brewer(palette = "Set1")+
+  guides(color=guide_legend(title="Number of checklists"))
+
+all_raw_data_S %>%
+  ggplot(., aes(x=ghm, y=mean_value, 
+                color=as.factor(checklists_per_grid), linetype=as.factor(grid_size)))+
+  geom_smooth(method="lm", se=FALSE)+
+  theme_bw()+
+  theme(axis.text=element_text(color="black"))+
+  facet_wrap(~scale, scales="free")+
+  xlab("Global Human Modification")+
+  ylab("S")+
+  ggtitle(paste0("Across all BCRs"))+
+  scale_color_brewer(palette = "Set1")+
+  guides(color=guide_legend(title="Number of checklists"))+
+  guides(linetype=guide_legend(title="Grid size"))
+
+
+
+# Now repeat that but for S_n
+all_raw_data_S_n %>%
+  ggplot(., aes(x=ghm, y=mean_value, 
+                color=as.factor(grid_size), group=as.factor(grid_size)))+
+  geom_smooth(method="lm", se=FALSE)+
+  theme_bw()+
+  theme(axis.text=element_text(color="black"))+
+  facet_wrap(scale ~ checklists_per_grid, scales="free")+
+  xlab("Global Human Modification")+
+  ylab("S_n")+
+  ggtitle(paste0("Across all BCRs"))+
+  scale_color_brewer(palette = "Set1")+
+  guides(color=guide_legend(title="Grid size"))
+
+all_raw_data_S_n %>%
+  ggplot(., aes(x=ghm, y=mean_value, 
+                color=as.factor(grid_size), group=as.factor(grid_size)))+
+  geom_smooth(method="gam", se=FALSE)+
+  theme_bw()+
+  theme(axis.text=element_text(color="black"))+
+  facet_wrap(scale ~ checklists_per_grid, scales="free")+
+  xlab("Global Human Modification")+
+  ylab("S_n")+
+  ggtitle(paste0("Across all BCRs"))+
+  scale_color_brewer(palette = "Set1")+
+  guides(color=guide_legend(title="Grid size"))
+
+all_raw_data_S_n %>%
+  ggplot(., aes(x=ghm, y=mean_value, 
+                color=as.factor(checklists_per_grid), group=as.factor(checklists_per_grid)))+
+  geom_smooth(method="lm", se=FALSE)+
+  theme_bw()+
+  theme(axis.text=element_text(color="black"))+
+  facet_wrap(scale ~ grid_size, scales="free")+
+  xlab("Global Human Modification")+
+  ylab("S_n")+
+  ggtitle(paste0("Across all BCRs"))+
+  scale_color_brewer(palette = "Set1")+
+  guides(color=guide_legend(title="Number of checklists"))
+
+all_raw_data_S_n %>%
+  ggplot(., aes(x=ghm, y=mean_value, 
+                color=as.factor(checklists_per_grid), linetype=as.factor(grid_size)))+
+  geom_smooth(method="lm", se=FALSE)+
+  theme_bw()+
+  theme(axis.text=element_text(color="black"))+
+  facet_wrap(~scale, scales="free")+
+  xlab("Global Human Modification")+
+  ylab("S_n")+
+  ggtitle(paste0("Across all BCRs"))+
+  scale_color_brewer(palette = "Set1")+
+  guides(color=guide_legend(title="Number of checklists"))+
+  guides(linetype=guide_legend(title="Grid size"))
+
+
+# Now repeat that but for S_PIE
+all_raw_data_S_PIE %>%
+  ggplot(., aes(x=ghm, y=mean_value, 
+                color=as.factor(grid_size), group=as.factor(grid_size)))+
+  geom_smooth(method="lm", se=FALSE)+
+  theme_bw()+
+  theme(axis.text=element_text(color="black"))+
+  facet_wrap(scale ~ checklists_per_grid, scales="free")+
+  xlab("Global Human Modification")+
+  ylab("S_PIE")+
+  ggtitle(paste0("Across all BCRs"))+
+  scale_color_brewer(palette = "Set1")+
+  guides(color=guide_legend(title="Grid size"))
+
+all_raw_data_S_PIE %>%
+  ggplot(., aes(x=ghm, y=mean_value, 
+                color=as.factor(grid_size), group=as.factor(grid_size)))+
+  geom_smooth(method="gam", se=FALSE)+
+  theme_bw()+
+  theme(axis.text=element_text(color="black"))+
+  facet_wrap(scale ~ checklists_per_grid, scales="free")+
+  xlab("Global Human Modification")+
+  ylab("S_PIE")+
+  ggtitle(paste0("Across all BCRs"))+
+  scale_color_brewer(palette = "Set1")+
+  guides(color=guide_legend(title="Grid size"))
+
+all_raw_data_S_PIE %>%
+  ggplot(., aes(x=ghm, y=mean_value, 
+                color=as.factor(checklists_per_grid), group=as.factor(checklists_per_grid)))+
+  geom_smooth(method="lm", se=FALSE)+
+  theme_bw()+
+  theme(axis.text=element_text(color="black"))+
+  facet_wrap(scale ~ grid_size, scales="free")+
+  xlab("Global Human Modification")+
+  ylab("S_PIE")+
+  ggtitle(paste0("Across all BCRs"))+
+  scale_color_brewer(palette = "Set1")+
+  guides(color=guide_legend(title="Number of checklists"))
+
+all_raw_data_S_PIE %>%
+  ggplot(., aes(x=ghm, y=mean_value, 
+                color=as.factor(checklists_per_grid), linetype=as.factor(grid_size)))+
+  geom_smooth(method="lm", se=FALSE)+
+  theme_bw()+
+  theme(axis.text=element_text(color="black"))+
+  facet_wrap(~scale, scales="free")+
+  xlab("Global Human Modification")+
+  ylab("S_PIE")+
+  ggtitle(paste0("Across all BCRs"))+
+  scale_color_brewer(palette = "Set1")+
+  guides(color=guide_legend(title="Number of checklists"))+
+  guides(linetype=guide_legend(title="Grid size"))
+
+# ONE MORE TIME, but for N
+all_raw_data_N %>%
+  ggplot(., aes(x=ghm, y=mean_value, 
+                color=as.factor(grid_size), group=as.factor(grid_size)))+
+  geom_smooth(method="lm", se=FALSE)+
+  theme_bw()+
+  theme(axis.text=element_text(color="black"))+
+  facet_wrap(scale ~ checklists_per_grid, scales="free")+
+  xlab("Global Human Modification")+
+  ylab("N")+
+  ggtitle(paste0("Across all BCRs"))+
+  scale_color_brewer(palette = "Set1")+
+  guides(color=guide_legend(title="Grid size"))
+
+all_raw_data_N %>%
+  ggplot(., aes(x=ghm, y=mean_value, 
+                color=as.factor(grid_size), group=as.factor(grid_size)))+
+  geom_smooth(method="gam", se=FALSE)+
+  theme_bw()+
+  theme(axis.text=element_text(color="black"))+
+  facet_wrap(scale ~ checklists_per_grid, scales="free")+
+  xlab("Global Human Modification")+
+  ylab("N")+
+  ggtitle(paste0("Across all BCRs"))+
+  scale_color_brewer(palette = "Set1")+
+  guides(color=guide_legend(title="Grid size"))
+
+all_raw_data_N %>%
+  ggplot(., aes(x=ghm, y=mean_value, 
+                color=as.factor(checklists_per_grid), group=as.factor(checklists_per_grid)))+
+  geom_smooth(method="lm", se=FALSE)+
+  theme_bw()+
+  theme(axis.text=element_text(color="black"))+
+  facet_wrap(scale ~ grid_size, scales="free")+
+  xlab("Global Human Modification")+
+  ylab("N")+
+  ggtitle(paste0("Across all BCRs"))+
+  scale_color_brewer(palette = "Set1")+
+  guides(color=guide_legend(title="Number of checklists"))
+
+all_raw_data_N %>%
+  ggplot(., aes(x=ghm, y=mean_value, 
+                color=as.factor(checklists_per_grid), linetype=as.factor(grid_size)))+
+  geom_smooth(method="lm", se=FALSE)+
+  theme_bw()+
+  theme(axis.text=element_text(color="black"))+
+  facet_wrap(~scale, scales="free")+
+  xlab("Global Human Modification")+
+  ylab("N")+
+  ggtitle(paste0("Across all BCRs"))+
+  scale_color_brewer(palette = "Set1")+
+  guides(color=guide_legend(title="Number of checklists"))+
+  guides(linetype=guide_legend(title="Grid size"))
+
+
+
+
+
+
+
+
 visualize_results(23, "S")
 visualize_results(25, "S")
 visualize_results(30, "S")
@@ -103,7 +573,20 @@ visualize_results(5, "S_n")
 
 
 
+# plot results
+plot <- ggplot(summary, aes(x=ghm, y=mean_value, 
+                            color=as.factor(grid_size), group=as.factor(grid_size)))+
+  geom_smooth(method="lm", se=FALSE)+
+  theme_bw()+
+  theme(axis.text=element_text(color="black"))+
+  facet_wrap(scale ~ checklists_per_grid, scales="free")+
+  xlab("Global Human Modification")+
+  ylab(paste0(index_name))+
+  ggtitle(paste0("BCR ", BCR_number))+
+  scale_color_brewer(palette = "Set1")+
+  guides(color=guide_legend(title="Grid size"))
 
+return(plot)
 
 
 ###################

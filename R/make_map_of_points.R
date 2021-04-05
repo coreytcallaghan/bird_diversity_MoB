@@ -52,6 +52,29 @@ ggplot()+
 
 ggsave("Figures/map_of_points_in_USA.png", height=4.3, width=5.4, units="in")
 
+# make dark version of figure for presentations
+ggplot()+
+  geom_sf(data=us)+
+  theme_bw()+
+  theme(panel.grid.major=element_blank())+
+  geom_sf(data=points_sf, aes(color=ghm), size=0.4)+
+  scale_color_viridis_c(option="inferno")+
+  xlim(130, 60)+
+  ylim(25, 50)+
+  theme(legend.position="bottom")+
+  theme(axis.text=element_text(color="white"))+
+  theme(panel.background=element_rect(fill="black"))+
+  theme(plot.background=element_rect(fill="black"))+
+  theme(axis.ticks=element_blank())+
+  theme(panel.border=element_blank())+
+  theme(legend.background=element_rect(fill="black"))+
+  theme(legend.text=element_text(color="white"))+
+  theme(legend.title=element_text(color="white"))+
+  theme(legend.key = element_blank())+
+  theme(plot.margin=grid::unit(c(0,0,0,0), "mm"))
+
+ggsave("Figures/talk_figures/map_of_points_in_USA.png", height=7.5, width=13.3, units="in")
+
 bcrs <- st_read("Data/Spatial data/bcr_terrestrial_shape/BCR_Terrestrial_master.shp")
 
 bcr_summary <- ebird_data %>%
@@ -73,3 +96,24 @@ ggplot()+
   theme(axis.text=element_text(color="black"))
 
 ggsave("Figures/map_of_bcrs_and_sample_size.png", height=4.3, width=5.4, units="in")
+
+ggplot()+
+  geom_sf(data=bcr_plot_dat, aes(fill=log10(N)))+
+  theme_bw()+
+  theme(panel.grid.major=element_blank())+
+  scale_fill_viridis_c(option="inferno")+
+  theme(axis.text=element_text(color="black"))+
+  theme(axis.text=element_text(color="white"))+
+  theme(panel.background=element_rect(fill="black"))+
+  theme(plot.background=element_rect(fill="black"))+
+  theme(axis.ticks=element_blank())+
+  theme(panel.border=element_blank())+
+  theme(legend.background=element_rect(fill="black"))+
+  theme(legend.text=element_text(color="white"))+
+  theme(legend.title=element_text(color="white"))+
+  theme(legend.key = element_blank())+
+  theme(plot.margin=grid::unit(c(0,0,0,0), "mm"))
+
+ggsave("Figures/talk_figures/map_of_bcrs_and_sample_size.png", height=7.5, width=13.3, units="in")
+
+
