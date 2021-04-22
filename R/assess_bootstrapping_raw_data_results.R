@@ -43,24 +43,75 @@ summarize_boot_results <- function(BCR_number, index_name){
   
   message(paste0("Summarizing data for BCR ", BCR_number))
   
-  dat <- readRDS(paste0("Intermediate_results/bootstrapping/grid_size_0.1/number_samples_10/BCR_", BCR_number, ".RDS")) %>%
-    mutate(grid_size=0.1) %>%
-    bind_rows(readRDS(paste0("Intermediate_results/bootstrapping/grid_size_0.1/number_samples_30/BCR_", BCR_number, ".RDS")) %>%
-                mutate(grid_size=0.1)) %>%
-    bind_rows(readRDS(paste0("Intermediate_results/bootstrapping/grid_size_0.1/number_samples_50/BCR_", BCR_number, ".RDS")) %>%
-                mutate(grid_size=0.1)) %>%
-    bind_rows(readRDS(paste0("Intermediate_results/bootstrapping/grid_size_0.5/number_samples_10/BCR_", BCR_number, ".RDS")) %>%
-                mutate(grid_size=0.5)) %>%
-    bind_rows(readRDS(paste0("Intermediate_results/bootstrapping/grid_size_0.5/number_samples_30/BCR_", BCR_number, ".RDS")) %>%
-                mutate(grid_size=0.5)) %>%
-    bind_rows(readRDS(paste0("Intermediate_results/bootstrapping/grid_size_0.5/number_samples_50/BCR_", BCR_number, ".RDS")) %>%
-                mutate(grid_size=0.5)) %>%
-    bind_rows(readRDS(paste0("Intermediate_results/bootstrapping/grid_size_1/number_samples_10/BCR_", BCR_number, ".RDS")) %>%
-                mutate(grid_size=1.0)) %>%
-    bind_rows(readRDS(paste0("Intermediate_results/bootstrapping/grid_size_1/number_samples_30/BCR_", BCR_number, ".RDS")) %>%
-                mutate(grid_size=1.0)) %>%
-    bind_rows(readRDS(paste0("Intermediate_results/bootstrapping/grid_size_1/number_samples_50/BCR_", BCR_number, ".RDS")) %>%
-                mutate(grid_size=1.0))
+  file_list <- c(paste0("Intermediate_results/bootstrapping/grid_size_0.1/number_samples_10/BCR_", BCR_number, ".RDS"),
+                 paste0("Intermediate_results/bootstrapping/grid_size_0.1/number_samples_30/BCR_", BCR_number, ".RDS"),
+                 paste0("Intermediate_results/bootstrapping/grid_size_0.1/number_samples_50/BCR_", BCR_number, ".RDS"),
+                 paste0("Intermediate_results/bootstrapping/grid_size_0.5/number_samples_10/BCR_", BCR_number, ".RDS"),
+                 paste0("Intermediate_results/bootstrapping/grid_size_0.5/number_samples_30/BCR_", BCR_number, ".RDS"),
+                 paste0("Intermediate_results/bootstrapping/grid_size_0.5/number_samples_50/BCR_", BCR_number, ".RDS"),
+                 paste0("Intermediate_results/bootstrapping/grid_size_1/number_samples_10/BCR_", BCR_number, ".RDS"),
+                 paste0("Intermediate_results/bootstrapping/grid_size_1/number_samples_30/BCR_", BCR_number, ".RDS"),
+                 paste0("Intermediate_results/bootstrapping/grid_size_1/number_samples_50/BCR_", BCR_number, ".RDS"))
+  
+  file.exists(file_list)
+  
+  read_data_0.1 <- function(x){
+    
+    dat <- readRDS(x) %>%
+      mutate(grid_size=0.1)
+  }
+  
+  read_data_0.5 <- function(x){
+    
+    dat <- readRDS(x) %>%
+      mutate(grid_size=0.5)
+  }
+  
+  read_data_1 <- function(x){
+    
+    dat <- readRDS(x) %>%
+      mutate(grid_size=1)
+  }
+  
+  dat_0.1 <- bind_rows(lapply(file_list[1:3] %>%
+                                as.data.frame() %>%
+                                mutate(exists=ifelse(file.exists(.)==TRUE, "yes", "no")) %>%
+                                dplyr::filter(exists=="yes") %>%
+                                .$., read_data_0.1))
+  
+  dat_0.5 <- bind_rows(lapply(file_list[4:6] %>%
+                                as.data.frame() %>%
+                                mutate(exists=ifelse(file.exists(.)==TRUE, "yes", "no")) %>%
+                                dplyr::filter(exists=="yes") %>%
+                                .$., read_data_0.5))
+  
+  dat_1 <- bind_rows(lapply(file_list[7:9] %>%
+                                as.data.frame() %>%
+                                mutate(exists=ifelse(file.exists(.)==TRUE, "yes", "no")) %>%
+                                dplyr::filter(exists=="yes") %>%
+                                .$., read_data_1))
+  dat <- bind_rows(dat_0.1,
+                   dat_0.5,
+                   dat_1)
+  
+  # dat <- readRDS(paste0("Intermediate_results/bootstrapping/grid_size_0.1/number_samples_10/BCR_", BCR_number, ".RDS")) %>%
+  #   mutate(grid_size=0.1) %>%
+  #   bind_rows(readRDS(paste0("Intermediate_results/bootstrapping/grid_size_0.1/number_samples_30/BCR_", BCR_number, ".RDS")) %>%
+  #               mutate(grid_size=0.1)) %>%
+  #   bind_rows(readRDS(paste0("Intermediate_results/bootstrapping/grid_size_0.1/number_samples_50/BCR_", BCR_number, ".RDS")) %>%
+  #               mutate(grid_size=0.1)) %>%
+  #   bind_rows(readRDS(paste0("Intermediate_results/bootstrapping/grid_size_0.5/number_samples_10/BCR_", BCR_number, ".RDS")) %>%
+  #               mutate(grid_size=0.5)) %>%
+  #   bind_rows(readRDS(paste0("Intermediate_results/bootstrapping/grid_size_0.5/number_samples_30/BCR_", BCR_number, ".RDS")) %>%
+  #               mutate(grid_size=0.5)) %>%
+  #   bind_rows(readRDS(paste0("Intermediate_results/bootstrapping/grid_size_0.5/number_samples_50/BCR_", BCR_number, ".RDS")) %>%
+  #               mutate(grid_size=0.5)) %>%
+  #   bind_rows(readRDS(paste0("Intermediate_results/bootstrapping/grid_size_1/number_samples_10/BCR_", BCR_number, ".RDS")) %>%
+  #               mutate(grid_size=1.0)) %>%
+  #   bind_rows(readRDS(paste0("Intermediate_results/bootstrapping/grid_size_1/number_samples_30/BCR_", BCR_number, ".RDS")) %>%
+  #               mutate(grid_size=1.0)) %>%
+  #   bind_rows(readRDS(paste0("Intermediate_results/bootstrapping/grid_size_1/number_samples_50/BCR_", BCR_number, ".RDS")) %>%
+  #               mutate(grid_size=1.0))
   
   temp_dat <- dat %>%
     dplyr::filter(index==index_name) %>%
@@ -91,6 +142,9 @@ all_raw_data_S <- bind_rows(lapply_with_error(bcr_list, function(x){summarize_bo
 all_raw_data_S_n <- bind_rows(lapply_with_error(bcr_list, function(x){summarize_boot_results(x, "S_n")}))
 all_raw_data_N <- bind_rows(lapply_with_error(bcr_list, function(x){summarize_boot_results(x, "N")}))
 all_raw_data_S_PIE <- bind_rows(lapply_with_error(bcr_list, function(x){summarize_boot_results(x, "S_PIE")}))
+all_raw_data_beta_S <- bind_rows(lapply_with_error(bcr_list, function(x){summarize_boot_results(x, "beta_S")}))
+all_raw_data_beta_S_n <- bind_rows(lapply_with_error(bcr_list, function(x){summarize_boot_results(x, "beta_S_n")}))
+all_raw_data_beta_S_PIE <- bind_rows(lapply_with_error(bcr_list, function(x){summarize_boot_results(x, "beta_S_PIE")}))
 
 # plot results for one BCR to start out with
 # First for "S"
