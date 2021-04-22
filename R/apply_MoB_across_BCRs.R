@@ -213,13 +213,26 @@ lapply_with_error <- function(X,FUN,...){
                                       error=function(e) NULL))
 }
 
+# Hacky but apply this for each grain size
+# Shouldn't be repeated, but laziness wins out sometimes
 lapply_with_error(bcr_list, function(x){perform_analysis_function(x, 0.1, 10)})
+lapply_with_error(bcr_list, function(x){perform_analysis_function(x, 0.2, 10)})
+lapply_with_error(bcr_list, function(x){perform_analysis_function(x, 0.3, 10)})
+lapply_with_error(bcr_list, function(x){perform_analysis_function(x, 0.4, 10)})
+lapply_with_error(bcr_list, function(x){perform_analysis_function(x, 0.5, 10)})
+lapply_with_error(bcr_list, function(x){perform_analysis_function(x, 0.6, 10)})
+lapply_with_error(bcr_list, function(x){perform_analysis_function(x, 0.7, 10)})
+lapply_with_error(bcr_list, function(x){perform_analysis_function(x, 0.8, 10)})
+lapply_with_error(bcr_list, function(x){perform_analysis_function(x, 0.9, 10)})
+lapply_with_error(bcr_list, function(x){perform_analysis_function(x, 1.0, 10)})
+
+
+# Now also apply some at additional sample levels to test the robustness of the influence
+# of sample size
 lapply_with_error(bcr_list, function(x){perform_analysis_function(x, 0.1, 30)})
 lapply_with_error(bcr_list, function(x){perform_analysis_function(x, 0.1, 50)})
-lapply_with_error(bcr_list, function(x){perform_analysis_function(x, 0.5, 10)})
 lapply_with_error(bcr_list, function(x){perform_analysis_function(x, 0.5, 30)})
 lapply_with_error(bcr_list, function(x){perform_analysis_function(x, 0.5, 50)})
-lapply_with_error(bcr_list, function(x){perform_analysis_function(x, 1.0, 10)})
 lapply_with_error(bcr_list, function(x){perform_analysis_function(x, 1.0, 30)})
 lapply_with_error(bcr_list, function(x){perform_analysis_function(x, 1.0, 50)})
 
