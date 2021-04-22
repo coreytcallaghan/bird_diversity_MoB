@@ -390,3 +390,29 @@ cutoff_10_grid_0.1 + ggtitle("Grid size=small") +
 
 ggsave("Figures/talk_figures/study_design_example_BCR_30.png", height=7.5, width=9, units="in")
 
+
+# figure of difference in sampling
+ggplot()+
+  geom_sf(data=bcrs, color="black", fill="gray80")+
+  geom_sf(data=grid_1_plot, aes(fill=log10(number_checklists)), alpha=0.9)+
+  scale_fill_viridis_c()+
+  coord_sf()+
+  theme_bw()+
+  xlim(85, 65)+
+  ylim(35, 50)+
+  theme(panel.grid.major=element_blank())+
+  theme(axis.text=element_text(color="white"))+
+  theme(panel.background=element_rect(fill="black"))+
+  theme(plot.background=element_rect(fill="black"))+
+  theme(axis.ticks=element_blank())+
+  theme(panel.border=element_blank())+
+  theme(legend.background=element_rect(fill="black"))+
+  theme(legend.text=element_text(color="white"))+
+  theme(legend.title=element_text(color="white"))+
+  theme(legend.key = element_blank())+
+  theme(plot.margin=grid::unit(c(0,0,0,0), "mm"))
+
+
+
+
+
