@@ -4,11 +4,13 @@
 # packages
 # packages
 library(ggplot2)
+library(patchwork)
 library(dplyr)
 library(purrr)
 library(tidyr)
 library(readr)
 
+# read in eBird data
 ebird_data <- readRDS("Data/ebird_data_raw_May.RDS") %>% 
   bind_rows(readRDS("Data/ebird_data_raw_Jun.RDS")) %>%
   bind_rows(readRDS("Data/ebird_data_raw_Jul.RDS")) %>%
@@ -36,22 +38,25 @@ bcr_list <- ebird_data %>%
   dplyr::filter(BCR_CODE != 0) %>%
   .$BCR_CODE
 
-# write a function to visualize results for a given index
-# and BCR name
-# at the alpha and gamma scale
+# write a function to summarize the bootstrap results
+# to get a 'mean' response, averaging across the bootstrapping results
+# super hacky because not all files may read in
+# as they may not exist
+# but I think gets the job done at least
 summarize_boot_results <- function(BCR_number, index_name){
   
   message(paste0("Summarizing data for BCR ", BCR_number))
   
   file_list <- c(paste0("Intermediate_results/bootstrapping/grid_size_0.1/number_samples_10/BCR_", BCR_number, ".RDS"),
-                 paste0("Intermediate_results/bootstrapping/grid_size_0.1/number_samples_30/BCR_", BCR_number, ".RDS"),
-                 paste0("Intermediate_results/bootstrapping/grid_size_0.1/number_samples_50/BCR_", BCR_number, ".RDS"),
+                 paste0("Intermediate_results/bootstrapping/grid_size_0.2/number_samples_10/BCR_", BCR_number, ".RDS"),
+                 paste0("Intermediate_results/bootstrapping/grid_size_0.3/number_samples_10/BCR_", BCR_number, ".RDS"),
+                 paste0("Intermediate_results/bootstrapping/grid_size_0.4/number_samples_10/BCR_", BCR_number, ".RDS"),
                  paste0("Intermediate_results/bootstrapping/grid_size_0.5/number_samples_10/BCR_", BCR_number, ".RDS"),
-                 paste0("Intermediate_results/bootstrapping/grid_size_0.5/number_samples_30/BCR_", BCR_number, ".RDS"),
-                 paste0("Intermediate_results/bootstrapping/grid_size_0.5/number_samples_50/BCR_", BCR_number, ".RDS"),
-                 paste0("Intermediate_results/bootstrapping/grid_size_1/number_samples_10/BCR_", BCR_number, ".RDS"),
-                 paste0("Intermediate_results/bootstrapping/grid_size_1/number_samples_30/BCR_", BCR_number, ".RDS"),
-                 paste0("Intermediate_results/bootstrapping/grid_size_1/number_samples_50/BCR_", BCR_number, ".RDS"))
+                 paste0("Intermediate_results/bootstrapping/grid_size_0.6/number_samples_10/BCR_", BCR_number, ".RDS"),
+                 paste0("Intermediate_results/bootstrapping/grid_size_0.7/number_samples_10/BCR_", BCR_number, ".RDS"),
+                 paste0("Intermediate_results/bootstrapping/grid_size_0.8/number_samples_10/BCR_", BCR_number, ".RDS"),
+                 paste0("Intermediate_results/bootstrapping/grid_size_0.9/number_samples_10/BCR_", BCR_number, ".RDS"),
+                 paste0("Intermediate_results/bootstrapping/grid_size_1/number_samples_10/BCR_", BCR_number, ".RDS"))
   
   file.exists(file_list)
   
@@ -61,10 +66,52 @@ summarize_boot_results <- function(BCR_number, index_name){
       mutate(grid_size=0.1)
   }
   
+  read_data_0.2 <- function(x){
+    
+    dat <- readRDS(x) %>%
+      mutate(grid_size=0.2)
+  }
+  
+  read_data_0.3 <- function(x){
+    
+    dat <- readRDS(x) %>%
+      mutate(grid_size=0.3)
+  }
+  
+  read_data_0.4 <- function(x){
+    
+    dat <- readRDS(x) %>%
+      mutate(grid_size=0.4)
+  }
+  
   read_data_0.5 <- function(x){
     
     dat <- readRDS(x) %>%
       mutate(grid_size=0.5)
+  }
+  
+  read_data_0.6 <- function(x){
+    
+    dat <- readRDS(x) %>%
+      mutate(grid_size=0.6)
+  }
+  
+  read_data_0.7 <- function(x){
+    
+    dat <- readRDS(x) %>%
+      mutate(grid_size=0.7)
+  }
+  
+  read_data_0.8 <- function(x){
+    
+    dat <- readRDS(x) %>%
+      mutate(grid_size=0.8)
+  }
+  
+  read_data_0.9 <- function(x){
+    
+    dat <- readRDS(x) %>%
+      mutate(grid_size=0.9)
   }
   
   read_data_1 <- function(x){
@@ -73,45 +120,75 @@ summarize_boot_results <- function(BCR_number, index_name){
       mutate(grid_size=1)
   }
   
-  dat_0.1 <- bind_rows(lapply(file_list[1:3] %>%
+  dat_0.1 <- bind_rows(lapply(file_list[1] %>%
                                 as.data.frame() %>%
                                 mutate(exists=ifelse(file.exists(.)==TRUE, "yes", "no")) %>%
                                 dplyr::filter(exists=="yes") %>%
                                 .$., read_data_0.1))
   
-  dat_0.5 <- bind_rows(lapply(file_list[4:6] %>%
+  dat_0.2 <- bind_rows(lapply(file_list[2] %>%
+                                as.data.frame() %>%
+                                mutate(exists=ifelse(file.exists(.)==TRUE, "yes", "no")) %>%
+                                dplyr::filter(exists=="yes") %>%
+                                .$., read_data_0.2))
+  
+  dat_0.3 <- bind_rows(lapply(file_list[3] %>%
+                                as.data.frame() %>%
+                                mutate(exists=ifelse(file.exists(.)==TRUE, "yes", "no")) %>%
+                                dplyr::filter(exists=="yes") %>%
+                                .$., read_data_0.3))
+  
+  dat_0.4 <- bind_rows(lapply(file_list[4] %>%
+                                as.data.frame() %>%
+                                mutate(exists=ifelse(file.exists(.)==TRUE, "yes", "no")) %>%
+                                dplyr::filter(exists=="yes") %>%
+                                .$., read_data_0.4))
+  
+  dat_0.5 <- bind_rows(lapply(file_list[5] %>%
                                 as.data.frame() %>%
                                 mutate(exists=ifelse(file.exists(.)==TRUE, "yes", "no")) %>%
                                 dplyr::filter(exists=="yes") %>%
                                 .$., read_data_0.5))
   
-  dat_1 <- bind_rows(lapply(file_list[7:9] %>%
+  dat_0.6 <- bind_rows(lapply(file_list[6] %>%
+                                as.data.frame() %>%
+                                mutate(exists=ifelse(file.exists(.)==TRUE, "yes", "no")) %>%
+                                dplyr::filter(exists=="yes") %>%
+                                .$., read_data_0.6))
+  
+  dat_0.7 <- bind_rows(lapply(file_list[7] %>%
+                                as.data.frame() %>%
+                                mutate(exists=ifelse(file.exists(.)==TRUE, "yes", "no")) %>%
+                                dplyr::filter(exists=="yes") %>%
+                                .$., read_data_0.7))
+  
+  dat_0.8 <- bind_rows(lapply(file_list[8] %>%
+                                as.data.frame() %>%
+                                mutate(exists=ifelse(file.exists(.)==TRUE, "yes", "no")) %>%
+                                dplyr::filter(exists=="yes") %>%
+                                .$., read_data_0.8))
+  
+  dat_0.9 <- bind_rows(lapply(file_list[9] %>%
+                                as.data.frame() %>%
+                                mutate(exists=ifelse(file.exists(.)==TRUE, "yes", "no")) %>%
+                                dplyr::filter(exists=="yes") %>%
+                                .$., read_data_0.9))
+  
+  dat_1 <- bind_rows(lapply(file_list[10] %>%
                                 as.data.frame() %>%
                                 mutate(exists=ifelse(file.exists(.)==TRUE, "yes", "no")) %>%
                                 dplyr::filter(exists=="yes") %>%
                                 .$., read_data_1))
   dat <- bind_rows(dat_0.1,
+                   dat_0.2,
+                   dat_0.3,
+                   dat_0.4,
                    dat_0.5,
+                   dat_0.6,
+                   dat_0.7,
+                   dat_0.8,
+                   dat_0.9,
                    dat_1)
-  
-  # dat <- readRDS(paste0("Intermediate_results/bootstrapping/grid_size_0.1/number_samples_10/BCR_", BCR_number, ".RDS")) %>%
-  #   mutate(grid_size=0.1) %>%
-  #   bind_rows(readRDS(paste0("Intermediate_results/bootstrapping/grid_size_0.1/number_samples_30/BCR_", BCR_number, ".RDS")) %>%
-  #               mutate(grid_size=0.1)) %>%
-  #   bind_rows(readRDS(paste0("Intermediate_results/bootstrapping/grid_size_0.1/number_samples_50/BCR_", BCR_number, ".RDS")) %>%
-  #               mutate(grid_size=0.1)) %>%
-  #   bind_rows(readRDS(paste0("Intermediate_results/bootstrapping/grid_size_0.5/number_samples_10/BCR_", BCR_number, ".RDS")) %>%
-  #               mutate(grid_size=0.5)) %>%
-  #   bind_rows(readRDS(paste0("Intermediate_results/bootstrapping/grid_size_0.5/number_samples_30/BCR_", BCR_number, ".RDS")) %>%
-  #               mutate(grid_size=0.5)) %>%
-  #   bind_rows(readRDS(paste0("Intermediate_results/bootstrapping/grid_size_0.5/number_samples_50/BCR_", BCR_number, ".RDS")) %>%
-  #               mutate(grid_size=0.5)) %>%
-  #   bind_rows(readRDS(paste0("Intermediate_results/bootstrapping/grid_size_1/number_samples_10/BCR_", BCR_number, ".RDS")) %>%
-  #               mutate(grid_size=1.0)) %>%
-  #   bind_rows(readRDS(paste0("Intermediate_results/bootstrapping/grid_size_1/number_samples_30/BCR_", BCR_number, ".RDS")) %>%
-  #               mutate(grid_size=1.0)) %>%
-  #   bind_rows(readRDS(paste0("Intermediate_results/bootstrapping/grid_size_1/number_samples_50/BCR_", BCR_number, ".RDS")) %>%
-  #               mutate(grid_size=1.0))
   
   temp_dat <- dat %>%
     dplyr::filter(index==index_name) %>%
@@ -135,9 +212,9 @@ lapply_with_error <- function(X,FUN,...){
                                       error=function(e) NULL))
 }
 
-# Now can use this function to visualize raw results for different BCRs
+# Now can use this function to get mean results 
+# across the different bootstrapping analysis
 # and different indices
-# haven't bothered looping through everything yet
 all_raw_data_S <- bind_rows(lapply_with_error(bcr_list, function(x){summarize_boot_results(x, "S")}))
 all_raw_data_S_n <- bind_rows(lapply_with_error(bcr_list, function(x){summarize_boot_results(x, "S_n")}))
 all_raw_data_N <- bind_rows(lapply_with_error(bcr_list, function(x){summarize_boot_results(x, "N")}))
@@ -146,649 +223,382 @@ all_raw_data_beta_S <- bind_rows(lapply_with_error(bcr_list, function(x){summari
 all_raw_data_beta_S_n <- bind_rows(lapply_with_error(bcr_list, function(x){summarize_boot_results(x, "beta_S_n")}))
 all_raw_data_beta_S_PIE <- bind_rows(lapply_with_error(bcr_list, function(x){summarize_boot_results(x, "beta_S_PIE")}))
 
-# plot results for one BCR to start out with
-# First for "S"
-all_raw_data_S %>%
-  dplyr::filter(BCR_CODE==30) %>%
-  ggplot(., aes(x=ghm, y=mean_value, 
-                    color=as.factor(grid_size), group=as.factor(grid_size)))+
-  geom_smooth(method="lm", se=FALSE)+
-  theme_bw()+
-  theme(axis.text=element_text(color="black"))+
-  facet_wrap(scale ~ checklists_per_grid, scales="free")+
-  xlab("Global Human Modification")+
-  ylab("S")+
-  ggtitle(paste0("BCR 30"))+
-  scale_color_brewer(palette = "Set1")+
-  guides(color=guide_legend(title="Grid size"))
-
-all_raw_data_S %>%
-  dplyr::filter(BCR_CODE==30) %>%
-  ggplot(., aes(x=ghm, y=mean_value, 
-                color=as.factor(grid_size), group=as.factor(grid_size)))+
-  geom_smooth(method="gam", se=FALSE)+
-  theme_bw()+
-  theme(axis.text=element_text(color="black"))+
-  facet_wrap(scale ~ checklists_per_grid, scales="free")+
-  xlab("Global Human Modification")+
-  ylab("S")+
-  ggtitle(paste0("BCR 30"))+
-  scale_color_brewer(palette = "Set1")+
-  guides(color=guide_legend(title="Grid size"))
-
-all_raw_data_S %>%
-  dplyr::filter(BCR_CODE==30) %>%
-  ggplot(., aes(x=ghm, y=mean_value, 
-                color=as.factor(checklists_per_grid), group=as.factor(checklists_per_grid)))+
-  geom_smooth(method="lm", se=FALSE)+
-  theme_bw()+
-  theme(axis.text=element_text(color="black"))+
-  facet_wrap(scale ~ grid_size, scales="free")+
-  xlab("Global Human Modification")+
-  ylab("S")+
-  ggtitle(paste0("BCR 30"))+
-  scale_color_brewer(palette = "Set1")+
-  guides(color=guide_legend(title="Number of checklists"))
-
-all_raw_data_S %>%
-  dplyr::filter(BCR_CODE==30) %>%
-  ggplot(., aes(x=ghm, y=mean_value, 
-                color=as.factor(checklists_per_grid), linetype=as.factor(grid_size)))+
-  geom_smooth(method="lm", se=FALSE)+
-  theme_bw()+
-  theme(axis.text=element_text(color="black"))+
-  facet_wrap(~scale, scales="free")+
-  xlab("Global Human Modification")+
-  ylab("S")+
-  ggtitle(paste0("BCR 30"))+
-  scale_color_brewer(palette = "Set1")+
-  guides(color=guide_legend(title="Number of checklists"))+
-  guides(linetype=guide_legend(title="Grid size"))
-
-
-
-# Now repeat that but for S_n
-all_raw_data_S_n %>%
-  dplyr::filter(BCR_CODE==30) %>%
-  ggplot(., aes(x=ghm, y=mean_value, 
-                color=as.factor(grid_size), group=as.factor(grid_size)))+
-  geom_smooth(method="lm", se=FALSE)+
-  theme_bw()+
-  theme(axis.text=element_text(color="black"))+
-  facet_wrap(scale ~ checklists_per_grid, scales="free")+
-  xlab("Global Human Modification")+
-  ylab("S_n")+
-  ggtitle(paste0("BCR 30"))+
-  scale_color_brewer(palette = "Set1")+
-  guides(color=guide_legend(title="Grid size"))
-
-all_raw_data_S_n %>%
-  dplyr::filter(BCR_CODE==30) %>%
-  ggplot(., aes(x=ghm, y=mean_value, 
-                color=as.factor(grid_size), group=as.factor(grid_size)))+
-  geom_smooth(method="gam", se=FALSE)+
-  theme_bw()+
-  theme(axis.text=element_text(color="black"))+
-  facet_wrap(scale ~ checklists_per_grid, scales="free")+
-  xlab("Global Human Modification")+
-  ylab("S_n")+
-  ggtitle(paste0("BCR 30"))+
-  scale_color_brewer(palette = "Set1")+
-  guides(color=guide_legend(title="Grid size"))
-
-all_raw_data_S_n %>%
-  dplyr::filter(BCR_CODE==30) %>%
-  ggplot(., aes(x=ghm, y=mean_value, 
-                color=as.factor(checklists_per_grid), group=as.factor(checklists_per_grid)))+
-  geom_smooth(method="lm", se=FALSE)+
-  theme_bw()+
-  theme(axis.text=element_text(color="black"))+
-  facet_wrap(scale ~ grid_size, scales="free")+
-  xlab("Global Human Modification")+
-  ylab("S_n")+
-  ggtitle(paste0("BCR 30"))+
-  scale_color_brewer(palette = "Set1")+
-  guides(color=guide_legend(title="Number of checklists"))
-
-all_raw_data_S_n %>%
-  dplyr::filter(BCR_CODE==30) %>%
-  ggplot(., aes(x=ghm, y=mean_value, 
-                color=as.factor(checklists_per_grid), linetype=as.factor(grid_size)))+
-  geom_smooth(method="lm", se=FALSE)+
-  theme_bw()+
-  theme(axis.text=element_text(color="black"))+
-  facet_wrap(~scale, scales="free")+
-  xlab("Global Human Modification")+
-  ylab("S_n")+
-  ggtitle(paste0("BCR 30"))+
-  scale_color_brewer(palette = "Set1")+
-  guides(color=guide_legend(title="Number of checklists"))+
-  guides(linetype=guide_legend(title="Grid size"))
-
-
-# Now repeat that but for S_PIE
-all_raw_data_S_PIE %>%
-  dplyr::filter(BCR_CODE==30) %>%
-  ggplot(., aes(x=ghm, y=mean_value, 
-                color=as.factor(grid_size), group=as.factor(grid_size)))+
-  geom_smooth(method="lm", se=FALSE)+
-  theme_bw()+
-  theme(axis.text=element_text(color="black"))+
-  facet_wrap(scale ~ checklists_per_grid, scales="free")+
-  xlab("Global Human Modification")+
-  ylab("S_PIE")+
-  ggtitle(paste0("BCR 30"))+
-  scale_color_brewer(palette = "Set1")+
-  guides(color=guide_legend(title="Grid size"))
-
-all_raw_data_S_PIE %>%
-  dplyr::filter(BCR_CODE==30) %>%
-  ggplot(., aes(x=ghm, y=mean_value, 
-                color=as.factor(grid_size), group=as.factor(grid_size)))+
-  geom_smooth(method="gam", se=FALSE)+
-  theme_bw()+
-  theme(axis.text=element_text(color="black"))+
-  facet_wrap(scale ~ checklists_per_grid, scales="free")+
-  xlab("Global Human Modification")+
-  ylab("S_PIE")+
-  ggtitle(paste0("BCR 30"))+
-  scale_color_brewer(palette = "Set1")+
-  guides(color=guide_legend(title="Grid size"))
-
-all_raw_data_S_PIE %>%
-  dplyr::filter(BCR_CODE==30) %>%
-  ggplot(., aes(x=ghm, y=mean_value, 
-                color=as.factor(checklists_per_grid), group=as.factor(checklists_per_grid)))+
-  geom_smooth(method="lm", se=FALSE)+
-  theme_bw()+
-  theme(axis.text=element_text(color="black"))+
-  facet_wrap(scale ~ grid_size, scales="free")+
-  xlab("Global Human Modification")+
-  ylab("S_PIE")+
-  ggtitle(paste0("BCR 30"))+
-  scale_color_brewer(palette = "Set1")+
-  guides(color=guide_legend(title="Number of checklists"))
-
-all_raw_data_S_PIE %>%
-  dplyr::filter(BCR_CODE==30) %>%
-  ggplot(., aes(x=ghm, y=mean_value, 
-                color=as.factor(checklists_per_grid), linetype=as.factor(grid_size)))+
-  geom_smooth(method="lm", se=FALSE)+
-  theme_bw()+
-  theme(axis.text=element_text(color="black"))+
-  facet_wrap(~scale, scales="free")+
-  xlab("Global Human Modification")+
-  ylab("S_PIE")+
-  ggtitle(paste0("BCR 30"))+
-  scale_color_brewer(palette = "Set1")+
-  guides(color=guide_legend(title="Number of checklists"))+
-  guides(linetype=guide_legend(title="Grid size"))
-
-# ONE MORE TIME, but for N
-# Now repeat that but for S_PIE
-all_raw_data_N %>%
-  dplyr::filter(BCR_CODE==30) %>%
-  ggplot(., aes(x=ghm, y=mean_value, 
-                color=as.factor(grid_size), group=as.factor(grid_size)))+
-  geom_smooth(method="lm", se=FALSE)+
-  theme_bw()+
-  theme(axis.text=element_text(color="black"))+
-  facet_wrap(scale ~ checklists_per_grid, scales="free")+
-  xlab("Global Human Modification")+
-  ylab("N")+
-  ggtitle(paste0("BCR 30"))+
-  scale_color_brewer(palette = "Set1")+
-  guides(color=guide_legend(title="Grid size"))
-
-all_raw_data_N %>%
-  dplyr::filter(BCR_CODE==30) %>%
-  ggplot(., aes(x=ghm, y=mean_value, 
-                color=as.factor(grid_size), group=as.factor(grid_size)))+
-  geom_smooth(method="gam", se=FALSE)+
-  theme_bw()+
-  theme(axis.text=element_text(color="black"))+
-  facet_wrap(scale ~ checklists_per_grid, scales="free")+
-  xlab("Global Human Modification")+
-  ylab("N")+
-  ggtitle(paste0("BCR 30"))+
-  scale_color_brewer(palette = "Set1")+
-  guides(color=guide_legend(title="Grid size"))
-
-all_raw_data_N %>%
-  dplyr::filter(BCR_CODE==30) %>%
-  ggplot(., aes(x=ghm, y=mean_value, 
-                color=as.factor(checklists_per_grid), group=as.factor(checklists_per_grid)))+
-  geom_smooth(method="lm", se=FALSE)+
-  theme_bw()+
-  theme(axis.text=element_text(color="black"))+
-  facet_wrap(scale ~ grid_size, scales="free")+
-  xlab("Global Human Modification")+
-  ylab("N")+
-  ggtitle(paste0("BCR 30"))+
-  scale_color_brewer(palette = "Set1")+
-  guides(color=guide_legend(title="Number of checklists"))
-
-all_raw_data_N %>%
-  dplyr::filter(BCR_CODE==30) %>%
-  ggplot(., aes(x=ghm, y=mean_value, 
-                color=as.factor(checklists_per_grid), linetype=as.factor(grid_size)))+
-  geom_smooth(method="lm", se=FALSE)+
-  theme_bw()+
-  theme(axis.text=element_text(color="black"))+
-  facet_wrap(~scale, scales="free")+
-  xlab("Global Human Modification")+
-  ylab("N")+
-  ggtitle(paste0("BCR 30"))+
-  scale_color_brewer(palette = "Set1")+
-  guides(color=guide_legend(title="Number of checklists"))+
-  guides(linetype=guide_legend(title="Grid size"))
-
-
 
 ###################################################
 ###################################################
 ########### PLOT RESULTS FOR ALL BCRS at once #####
 ###################################################
-# plot results for one BCR to start out with
 # First for "S"
-all_raw_data_S %>%
+lm_S <- all_raw_data_S %>%
+  bind_rows(all_raw_data_beta_S %>%
+              dplyr::filter(index=="beta_S") %>%
+              mutate(scale="beta")) %>%
+  mutate(scale=factor(scale, levels=c("alpha", "gamma", "beta"))) %>%
   ggplot(., aes(x=ghm, y=mean_value, 
                 color=as.factor(grid_size), group=as.factor(grid_size)))+
-  geom_smooth(method="lm", se=FALSE)+
-  theme_bw()+
-  theme(axis.text=element_text(color="black"))+
-  facet_wrap(scale ~ checklists_per_grid, scales="free")+
-  xlab("Global Human Modification")+
-  ylab("S")+
-  ggtitle(paste0("Across all BCRs"))+
-  scale_color_brewer(palette = "Set1")+
-  guides(color=guide_legend(title="Grid size"))
-
-all_raw_data_S %>%
-  ggplot(., aes(x=ghm, y=mean_value, 
-                color=as.factor(grid_size), group=as.factor(grid_size)))+
-  geom_smooth(method="gam", se=FALSE)+
-  theme_bw()+
-  theme(axis.text=element_text(color="black"))+
-  facet_wrap(scale ~ checklists_per_grid, scales="free")+
-  xlab("Global Human Modification")+
-  ylab("S")+
-  ggtitle(paste0("Across all BCRs"))+
-  scale_color_brewer(palette = "Set1")+
-  guides(color=guide_legend(title="Grid size"))
-
-all_raw_data_S %>%
-  ggplot(., aes(x=ghm, y=mean_value, 
-                color=as.factor(checklists_per_grid), group=as.factor(checklists_per_grid)))+
-  geom_smooth(method="lm", se=FALSE)+
-  theme_bw()+
-  theme(axis.text=element_text(color="black"))+
-  facet_wrap(scale ~ grid_size, scales="free")+
-  xlab("Global Human Modification")+
-  ylab("S")+
-  ggtitle(paste0("Across all BCRs"))+
-  scale_color_brewer(palette = "Set1")+
-  guides(color=guide_legend(title="Number of checklists"))
-
-all_raw_data_S %>%
-  ggplot(., aes(x=ghm, y=mean_value, 
-                color=as.factor(checklists_per_grid), linetype=as.factor(grid_size)))+
   geom_smooth(method="lm", se=FALSE)+
   theme_bw()+
   theme(axis.text=element_text(color="black"))+
   facet_wrap(~scale, scales="free")+
   xlab("Global Human Modification")+
   ylab("S")+
-  ggtitle(paste0("Across all BCRs"))+
-  scale_color_brewer(palette = "Set1")+
-  guides(color=guide_legend(title="Number of checklists"))+
-  guides(linetype=guide_legend(title="Grid size"))
+  scale_color_brewer(palette = "Spectral")+
+  guides(color=guide_legend(title="Grain size"))+
+  ggtitle("A")+
+  theme(legend.position="none")
 
+lm_S
 
+gam_S <- all_raw_data_S %>%
+  bind_rows(all_raw_data_beta_S %>%
+              dplyr::filter(index=="beta_S") %>%
+              mutate(scale="beta")) %>%
+  mutate(scale=factor(scale, levels=c("alpha", "gamma", "beta"))) %>%
+  ggplot(., aes(x=ghm, y=mean_value, 
+                color=as.factor(grid_size), group=as.factor(grid_size)))+
+  geom_smooth(method="gam", se=FALSE)+
+  theme_bw()+
+  theme(axis.text=element_text(color="black"))+
+  facet_wrap(~scale, scales="free")+
+  xlab("Global Human Modification")+
+  ylab("S")+
+  scale_color_brewer(palette = "Spectral")+
+  guides(color=guide_legend(title="Grain size"))+
+  ggtitle("A")+
+  theme(legend.position="none")
+
+gam_S
 
 # Now repeat that but for S_n
-all_raw_data_S_n %>%
+lm_S_n <- all_raw_data_S_n %>%
+  bind_rows(all_raw_data_beta_S_n %>%
+              dplyr::filter(index=="beta_S_n") %>%
+              mutate(scale="beta")) %>%
+  mutate(scale=factor(scale, levels=c("alpha", "gamma", "beta"))) %>%
   ggplot(., aes(x=ghm, y=mean_value, 
                 color=as.factor(grid_size), group=as.factor(grid_size)))+
-  geom_smooth(method="lm", se=FALSE)+
-  theme_bw()+
-  theme(axis.text=element_text(color="black"))+
-  facet_wrap(scale ~ checklists_per_grid, scales="free")+
-  xlab("Global Human Modification")+
-  ylab("S_n")+
-  ggtitle(paste0("Across all BCRs"))+
-  scale_color_brewer(palette = "Set1")+
-  guides(color=guide_legend(title="Grid size"))
-
-all_raw_data_S_n %>%
-  ggplot(., aes(x=ghm, y=mean_value, 
-                color=as.factor(grid_size), group=as.factor(grid_size)))+
-  geom_smooth(method="gam", se=FALSE)+
-  theme_bw()+
-  theme(axis.text=element_text(color="black"))+
-  facet_wrap(scale ~ checklists_per_grid, scales="free")+
-  xlab("Global Human Modification")+
-  ylab("S_n")+
-  ggtitle(paste0("Across all BCRs"))+
-  scale_color_brewer(palette = "Set1")+
-  guides(color=guide_legend(title="Grid size"))
-
-all_raw_data_S_n %>%
-  ggplot(., aes(x=ghm, y=mean_value, 
-                color=as.factor(checklists_per_grid), group=as.factor(checklists_per_grid)))+
-  geom_smooth(method="lm", se=FALSE)+
-  theme_bw()+
-  theme(axis.text=element_text(color="black"))+
-  facet_wrap(scale ~ grid_size, scales="free")+
-  xlab("Global Human Modification")+
-  ylab("S_n")+
-  ggtitle(paste0("Across all BCRs"))+
-  scale_color_brewer(palette = "Set1")+
-  guides(color=guide_legend(title="Number of checklists"))
-
-all_raw_data_S_n %>%
-  ggplot(., aes(x=ghm, y=mean_value, 
-                color=as.factor(checklists_per_grid), linetype=as.factor(grid_size)))+
   geom_smooth(method="lm", se=FALSE)+
   theme_bw()+
   theme(axis.text=element_text(color="black"))+
   facet_wrap(~scale, scales="free")+
   xlab("Global Human Modification")+
   ylab("S_n")+
-  ggtitle(paste0("Across all BCRs"))+
-  scale_color_brewer(palette = "Set1")+
-  guides(color=guide_legend(title="Number of checklists"))+
-  guides(linetype=guide_legend(title="Grid size"))
+  scale_color_brewer(palette = "Spectral")+
+  guides(color=guide_legend(title="Grain size"))+
+  ggtitle("B")+
+  theme(legend.position="none")
 
+lm_S_n
+
+gam_S_n <- all_raw_data_S_n %>%
+  bind_rows(all_raw_data_beta_S_n %>%
+              dplyr::filter(index=="beta_S_n") %>%
+              mutate(scale="beta")) %>%
+  mutate(scale=factor(scale, levels=c("alpha", "gamma", "beta"))) %>%
+  ggplot(., aes(x=ghm, y=mean_value, 
+                color=as.factor(grid_size), group=as.factor(grid_size)))+
+  geom_smooth(method="gam", se=FALSE)+
+  theme_bw()+
+  theme(axis.text=element_text(color="black"))+
+  facet_wrap(~scale, scales="free")+
+  xlab("Global Human Modification")+
+  ylab("S_n")+
+  scale_color_brewer(palette = "Spectral")+
+  guides(color=guide_legend(title="Grain size"))+
+  ggtitle("B")+
+  theme(legend.position="none")
+
+gam_S_n
 
 # Now repeat that but for S_PIE
-all_raw_data_S_PIE %>%
+lm_S_PIE <- all_raw_data_S_PIE %>%
+  bind_rows(all_raw_data_beta_S_PIE %>%
+              dplyr::filter(index=="beta_S_PIE") %>%
+              mutate(scale="beta")) %>%
+  mutate(scale=factor(scale, levels=c("alpha", "gamma", "beta"))) %>%
   ggplot(., aes(x=ghm, y=mean_value, 
                 color=as.factor(grid_size), group=as.factor(grid_size)))+
-  geom_smooth(method="lm", se=FALSE)+
-  theme_bw()+
-  theme(axis.text=element_text(color="black"))+
-  facet_wrap(scale ~ checklists_per_grid, scales="free")+
-  xlab("Global Human Modification")+
-  ylab("S_PIE")+
-  ggtitle(paste0("Across all BCRs"))+
-  scale_color_brewer(palette = "Set1")+
-  guides(color=guide_legend(title="Grid size"))
-
-all_raw_data_S_PIE %>%
-  ggplot(., aes(x=ghm, y=mean_value, 
-                color=as.factor(grid_size), group=as.factor(grid_size)))+
-  geom_smooth(method="gam", se=FALSE)+
-  theme_bw()+
-  theme(axis.text=element_text(color="black"))+
-  facet_wrap(scale ~ checklists_per_grid, scales="free")+
-  xlab("Global Human Modification")+
-  ylab("S_PIE")+
-  ggtitle(paste0("Across all BCRs"))+
-  scale_color_brewer(palette = "Set1")+
-  guides(color=guide_legend(title="Grid size"))
-
-all_raw_data_S_PIE %>%
-  ggplot(., aes(x=ghm, y=mean_value, 
-                color=as.factor(checklists_per_grid), group=as.factor(checklists_per_grid)))+
-  geom_smooth(method="lm", se=FALSE)+
-  theme_bw()+
-  theme(axis.text=element_text(color="black"))+
-  facet_wrap(scale ~ grid_size, scales="free")+
-  xlab("Global Human Modification")+
-  ylab("S_PIE")+
-  ggtitle(paste0("Across all BCRs"))+
-  scale_color_brewer(palette = "Set1")+
-  guides(color=guide_legend(title="Number of checklists"))
-
-all_raw_data_S_PIE %>%
-  ggplot(., aes(x=ghm, y=mean_value, 
-                color=as.factor(checklists_per_grid), linetype=as.factor(grid_size)))+
   geom_smooth(method="lm", se=FALSE)+
   theme_bw()+
   theme(axis.text=element_text(color="black"))+
   facet_wrap(~scale, scales="free")+
   xlab("Global Human Modification")+
   ylab("S_PIE")+
-  ggtitle(paste0("Across all BCRs"))+
-  scale_color_brewer(palette = "Set1")+
-  guides(color=guide_legend(title="Number of checklists"))+
-  guides(linetype=guide_legend(title="Grid size"))
+  scale_color_brewer(palette = "Spectral")+
+  guides(color=guide_legend(title="Grain size"))+
+  ggtitle("C")+
+  theme(legend.position="none")
+
+lm_S_PIE
+
+gam_S_PIE <- all_raw_data_S_PIE %>%
+  bind_rows(all_raw_data_beta_S_PIE %>%
+              dplyr::filter(index=="beta_S_PIE") %>%
+              mutate(scale="beta")) %>%
+  mutate(scale=factor(scale, levels=c("alpha", "gamma", "beta"))) %>%
+  ggplot(., aes(x=ghm, y=mean_value, 
+                color=as.factor(grid_size), group=as.factor(grid_size)))+
+  geom_smooth(method="gam", se=FALSE)+
+  theme_bw()+
+  theme(axis.text=element_text(color="black"))+
+  facet_wrap(~scale, scales="free")+
+  xlab("Global Human Modification")+
+  ylab("S_PIE")+
+  scale_color_brewer(palette = "Spectral")+
+  guides(color=guide_legend(title="Grain size"))+
+  ggtitle("C")+
+  theme(legend.position="none")
+
+gam_S_PIE
 
 # ONE MORE TIME, but for N
-all_raw_data_N %>%
+lm_N <- all_raw_data_N %>%
   ggplot(., aes(x=ghm, y=mean_value, 
                 color=as.factor(grid_size), group=as.factor(grid_size)))+
-  geom_smooth(method="lm", se=FALSE)+
-  theme_bw()+
-  theme(axis.text=element_text(color="black"))+
-  facet_wrap(scale ~ checklists_per_grid, scales="free")+
-  xlab("Global Human Modification")+
-  ylab("N")+
-  ggtitle(paste0("Across all BCRs"))+
-  scale_color_brewer(palette = "Set1")+
-  guides(color=guide_legend(title="Grid size"))
-
-all_raw_data_N %>%
-  ggplot(., aes(x=ghm, y=mean_value, 
-                color=as.factor(grid_size), group=as.factor(grid_size)))+
-  geom_smooth(method="gam", se=FALSE)+
-  theme_bw()+
-  theme(axis.text=element_text(color="black"))+
-  facet_wrap(scale ~ checklists_per_grid, scales="free")+
-  xlab("Global Human Modification")+
-  ylab("N")+
-  ggtitle(paste0("Across all BCRs"))+
-  scale_color_brewer(palette = "Set1")+
-  guides(color=guide_legend(title="Grid size"))
-
-all_raw_data_N %>%
-  ggplot(., aes(x=ghm, y=mean_value, 
-                color=as.factor(checklists_per_grid), group=as.factor(checklists_per_grid)))+
-  geom_smooth(method="lm", se=FALSE)+
-  theme_bw()+
-  theme(axis.text=element_text(color="black"))+
-  facet_wrap(scale ~ grid_size, scales="free")+
-  xlab("Global Human Modification")+
-  ylab("N")+
-  ggtitle(paste0("Across all BCRs"))+
-  scale_color_brewer(palette = "Set1")+
-  guides(color=guide_legend(title="Number of checklists"))
-
-all_raw_data_N %>%
-  ggplot(., aes(x=ghm, y=mean_value, 
-                color=as.factor(checklists_per_grid), linetype=as.factor(grid_size)))+
   geom_smooth(method="lm", se=FALSE)+
   theme_bw()+
   theme(axis.text=element_text(color="black"))+
   facet_wrap(~scale, scales="free")+
   xlab("Global Human Modification")+
   ylab("N")+
-  ggtitle(paste0("Across all BCRs"))+
-  scale_color_brewer(palette = "Set1")+
-  guides(color=guide_legend(title="Number of checklists"))+
-  guides(linetype=guide_legend(title="Grid size"))
+  scale_color_brewer(palette = "Spectral")+
+  guides(color=guide_legend(title="Grain size"))+
+  ggtitle("D")+
+  theme(legend.position="bottom")
 
+lm_N
 
-
-
-
-
-
-
-visualize_results(23, "S")
-visualize_results(25, "S")
-visualize_results(30, "S")
-visualize_results(5, "S")
-visualize_results(23, "S_n")
-visualize_results(25, "S_n")
-visualize_results(30, "S_n")
-visualize_results(5, "S_n")
-
-
-
-# plot results
-plot <- ggplot(summary, aes(x=ghm, y=mean_value, 
-                            color=as.factor(grid_size), group=as.factor(grid_size)))+
-  geom_smooth(method="lm", se=FALSE)+
+gam_N <- all_raw_data_N %>%
+  ggplot(., aes(x=ghm, y=mean_value, 
+                color=as.factor(grid_size), group=as.factor(grid_size)))+
+  geom_smooth(method="gam", se=FALSE)+
   theme_bw()+
   theme(axis.text=element_text(color="black"))+
-  facet_wrap(scale ~ checklists_per_grid, scales="free")+
+  facet_wrap(~scale, scales="free")+
   xlab("Global Human Modification")+
-  ylab(paste0(index_name))+
-  ggtitle(paste0("BCR ", BCR_number))+
-  scale_color_brewer(palette = "Set1")+
-  guides(color=guide_legend(title="Grid size"))
+  ylab("N")+
+  scale_color_brewer(palette = "Spectral")+
+  guides(color=guide_legend(title="Grain size"))+
+  ggtitle("D")+
+  theme(legend.position="bottom")
 
-return(plot)
+gam_N
 
+# Put plots together into one
+lm_S + lm_S_n + lm_S_PIE + lm_N + plot_layout(ncol=2)
 
-###################
-############## OLD
-#################
+ggsave("Figures/lm_alpha_gamma_v1.png", width=8.5, height=6.8, units="in")
 
+# Put plots together into one
+gam_S + gam_S_n + gam_S_PIE + gam_N + plot_layout(ncol=2)
 
+ggsave("Figures/gam_alpha_gamma_v1.png", width=8.5, height=6.8, units="in")
 
-
-# pick a BCR
-BCR=23
-
-# collate data across the factorial design
-# for that BCR
-dat <- readRDS(paste0("Intermediate_results/bootstrapping/grid_size_0.1/number_samples_10/BCR_", BCR, ".RDS")) %>%
-  mutate(grid_size=0.1) %>%
-  bind_rows(readRDS(paste0("Intermediate_results/bootstrapping/grid_size_0.1/number_samples_30/BCR_", BCR, ".RDS")) %>%
-              mutate(grid_size=0.1)) %>%
-  bind_rows(readRDS(paste0("Intermediate_results/bootstrapping/grid_size_0.1/number_samples_50/BCR_", BCR, ".RDS")) %>%
-              mutate(grid_size=0.1)) %>%
-  bind_rows(readRDS(paste0("Intermediate_results/bootstrapping/grid_size_0.5/number_samples_10/BCR_", BCR, ".RDS")) %>%
-              mutate(grid_size=0.5)) %>%
-  bind_rows(readRDS(paste0("Intermediate_results/bootstrapping/grid_size_0.5/number_samples_30/BCR_", BCR, ".RDS")) %>%
-              mutate(grid_size=0.5)) %>%
-  bind_rows(readRDS(paste0("Intermediate_results/bootstrapping/grid_size_0.5/number_samples_50/BCR_", BCR, ".RDS")) %>%
-              mutate(grid_size=0.5)) %>%
-  bind_rows(readRDS(paste0("Intermediate_results/bootstrapping/grid_size_1/number_samples_10/BCR_", BCR, ".RDS")) %>%
-              mutate(grid_size=1.0)) %>%
-  bind_rows(readRDS(paste0("Intermediate_results/bootstrapping/grid_size_1/number_samples_30/BCR_", BCR, ".RDS")) %>%
-              mutate(grid_size=1.0)) %>%
-  bind_rows(readRDS(paste0("Intermediate_results/bootstrapping/grid_size_1/number_samples_50/BCR_", BCR, ".RDS")) %>%
-              mutate(grid_size=1.0))
-
-# let's look only at S for now
-# and only at alpha and gamma scale
-temp_dat <- dat %>%
-  dplyr::filter(index=="S") %>%
-  dplyr::filter(scale %in% c("alpha", "gamma"))
-
-# get mean bootstrap responses
-summary <- temp_dat %>%
-  group_by(scale, index, grid_size, checklists_per_grid, ghm) %>%
-  summarize(mean_response=mean(value))
-
-# plot results
-ggplot(summary, aes(x=ghm, y=mean_response, 
-                    color=as.factor(grid_size), group=as.factor(grid_size)))+
+# Now for beta
+lm_S_PIE_beta <- all_raw_data_beta_S_PIE %>%
+  ggplot(., aes(x=ghm, y=mean_value, 
+                color=as.factor(grid_size), group=as.factor(grid_size)))+
   geom_smooth(method="lm", se=FALSE)+
   theme_bw()+
   theme(axis.text=element_text(color="black"))+
-  facet_wrap(scale ~ checklists_per_grid, scales="free")+
-  ggtitle("BCR=BCR23")
+  facet_wrap(~scale, scales="free")+
+  xlab("Global Human Modification")+
+  ylab("beta_S_PIE")+
+  scale_color_brewer(palette = "Spectral")+
+  guides(color=guide_legend(title="Grain size"))+
+  ggtitle("C")+
+  theme(legend.position="none")
+
+lm_S_PIE_beta
+
+gam_S_PIE <- all_raw_data_S_PIE %>%
+  ggplot(., aes(x=ghm, y=mean_value, 
+                color=as.factor(grid_size), group=as.factor(grid_size)))+
+  geom_smooth(method="gam", se=FALSE)+
+  theme_bw()+
+  theme(axis.text=element_text(color="black"))+
+  facet_wrap(~scale, scales="free")+
+  xlab("Global Human Modification")+
+  ylab("S_PIE")+
+  scale_color_brewer(palette = "Spectral")+
+  guides(color=guide_legend(title="Grain size"))+
+  ggtitle("C")+
+  theme(legend.position="none")
+
+gam_S_PIE
 
 
 
-# packages
-library(ggplot2)
-library(dplyr)
-library(purrr)
-library(tidyr)
 
-# pick a BCR
-BCR=23
 
-dat <- readRDS(paste0("Intermediate_results/bootstrapping/grid_size_0.1/number_samples_10/BCR_", BCR, ".RDS")) %>%
-  mutate(grid_size=0.1)
+# MAke a potentially figure 2
+# only look at checklists=10
+# and plot for alpha, gamma, and beta
+# for S, S_n, S_PIE
+# First let's do alpha scale
+lm_all_alpha <- all_raw_data_N %>%
+  dplyr::filter(scale=="alpha") %>%
+  dplyr::filter(checklists_per_grid==10) %>%
+  bind_rows(all_raw_data_S %>%
+              dplyr::filter(scale=="alpha") %>%
+              dplyr::filter(checklists_per_grid==10)) %>%
+  bind_rows(all_raw_data_S_PIE %>%
+              dplyr::filter(scale=="alpha") %>%
+              dplyr::filter(checklists_per_grid==10)) %>%
+  bind_rows(all_raw_data_S_n %>%
+              dplyr::filter(scale=="alpha") %>%
+              dplyr::filter(checklists_per_grid==10)) %>%
+  mutate(index=factor(index, levels=c("S", "S_n", "S_PIE", "N"))) %>%
+  ggplot(., aes(x=ghm, y=mean_value, color=as.factor(grid_size)))+
+  geom_smooth(method="lm", se=FALSE)+
+  theme_bw()+
+  theme(axis.text=element_text(color="black"))+
+  facet_wrap(~index, scales="free")+
+  xlab("Global Human Modification")+
+  ylab("MoB variable")+
+  ggtitle(paste0("A) alpha scale across all BCRs"))+
+  scale_color_brewer(palette = "Spectral")+
+  guides(color=guide_legend(title="Grain size"))
 
-S_test <- dat %>%
-  dplyr::filter(index=="S") %>%
-  dplyr::filter(scale=="alpha")
+lm_all_alpha
 
-ggplot(S_test, aes(x=ghm, y=value, group=draw))+
-  geom_smooth(method="lm", se=FALSE)
+gam_all_alpha <- all_raw_data_N %>%
+  dplyr::filter(scale=="alpha") %>%
+  dplyr::filter(checklists_per_grid==10) %>%
+  bind_rows(all_raw_data_S %>%
+              dplyr::filter(scale=="alpha") %>%
+              dplyr::filter(checklists_per_grid==10)) %>%
+  bind_rows(all_raw_data_S_PIE %>%
+              dplyr::filter(scale=="alpha") %>%
+              dplyr::filter(checklists_per_grid==10)) %>%
+  bind_rows(all_raw_data_S_n %>%
+              dplyr::filter(scale=="alpha") %>%
+              dplyr::filter(checklists_per_grid==10)) %>%
+  mutate(index=factor(index, levels=c("S", "S_n", "S_PIE", "N"))) %>%
+  ggplot(., aes(x=ghm, y=mean_value, color=as.factor(grid_size)))+
+  geom_smooth(method="gam", se=FALSE)+
+  theme_bw()+
+  theme(axis.text=element_text(color="black"))+
+  facet_wrap(~index, scales="free")+
+  xlab("Global Human Modification")+
+  ylab("MoB variable")+
+  ggtitle(paste0("A) alpha scale across all BCRs"))+
+  scale_color_brewer(palette = "Spectral")+
+  guides(color=guide_legend(title="Grain size"))
 
-mod <- lm(value ~ ghm, data=S_test)
+gam_all_alpha
 
-newdat <- tibble(ghm = seq(0, 1, length.out=100)) 
+lm_all_gamma <- all_raw_data_N %>%
+  dplyr::filter(scale=="gamma") %>%
+  dplyr::filter(checklists_per_grid==10) %>%
+  bind_rows(all_raw_data_S %>%
+              dplyr::filter(scale=="gamma") %>%
+              dplyr::filter(checklists_per_grid==10)) %>%
+  bind_rows(all_raw_data_S_PIE %>%
+              dplyr::filter(scale=="gamma") %>%
+              dplyr::filter(checklists_per_grid==10)) %>%
+  bind_rows(all_raw_data_S_n %>%
+              dplyr::filter(scale=="gamma") %>%
+              dplyr::filter(checklists_per_grid==10)) %>%
+  mutate(index=factor(index, levels=c("S", "S_n", "S_PIE", "N"))) %>%
+  ggplot(., aes(x=ghm, y=mean_value, color=as.factor(grid_size)))+
+  geom_smooth(method="lm", se=FALSE)+
+  theme_bw()+
+  theme(axis.text=element_text(color="black"))+
+  facet_wrap(~index, scales="free")+
+  xlab("Global Human Modification")+
+  ylab("MoB variable")+
+  ggtitle(paste0("B) gamma scale across all BCRs"))+
+  scale_color_brewer(palette = "Spectral")+
+  guides(color=guide_legend(title="Grain size"))
 
-prediction <- tibble(ghm = seq(0, 1, length.out=100),
-                     value=predict(mod, newdata=newdat),
-                     value_se=predict(mod, newdata=newdat, se.fit=TRUE)$se.fit)
+lm_all_gamma
 
-ggplot(prediction, aes(x=ghm, y=value))+
-  geom_line()+
-  geom_line(aes(x=ghm, y=value-value_se), linetype="dashed")+
-  geom_line(aes(x=ghm, y=value+value_se), linetype="dashed")
+gam_all_gamma <- all_raw_data_N %>%
+  dplyr::filter(scale=="gamma") %>%
+  dplyr::filter(checklists_per_grid==10) %>%
+  bind_rows(all_raw_data_S %>%
+              dplyr::filter(scale=="gamma") %>%
+              dplyr::filter(checklists_per_grid==10)) %>%
+  bind_rows(all_raw_data_S_PIE %>%
+              dplyr::filter(scale=="gamma") %>%
+              dplyr::filter(checklists_per_grid==10)) %>%
+  bind_rows(all_raw_data_S_n %>%
+              dplyr::filter(scale=="gamma") %>%
+              dplyr::filter(checklists_per_grid==10)) %>%
+  mutate(index=factor(index, levels=c("S", "S_n", "S_PIE", "N"))) %>%
+  ggplot(., aes(x=ghm, y=mean_value, color=as.factor(grid_size)))+
+  geom_smooth(method="gam", se=FALSE)+
+  theme_bw()+
+  theme(axis.text=element_text(color="black"))+
+  facet_wrap(~index, scales="free")+
+  xlab("Global Human Modification")+
+  ylab("MoB variable")+
+  ggtitle(paste0("B) gamma scale across all BCRs"))+
+  scale_color_brewer(palette = "Spectral")+
+  guides(color=guide_legend(title="Grain size"))
 
-S_test2 <- dat %>%
-  dplyr::filter(index=="S") %>%
-  dplyr::filter(scale=="gamma")
+gam_all_gamma
 
-ggplot(S_test2, aes(x=ghm, y=value, group=draw))+
-  geom_smooth(method="lm", se=FALSE)
+lm_all_beta <- all_raw_data_beta_S %>%
+  dplyr::filter(scale=="alpha") %>%
+  dplyr::filter(checklists_per_grid==10) %>%
+  bind_rows(all_raw_data_beta_S_PIE %>%
+              dplyr::filter(scale=="alpha") %>%
+              dplyr::filter(checklists_per_grid==10)) %>%
+  bind_rows(all_raw_data_beta_S_n %>%
+              dplyr::filter(scale=="alpha") %>%
+              dplyr::filter(checklists_per_grid==10)) %>%
+  mutate(scale="beta") %>%
+  mutate(index=gsub("beta_", "", index)) %>%
+  ggplot(., aes(x=ghm, y=mean_value, color=as.factor(grid_size)))+
+  geom_smooth(method="lm", se=FALSE)+
+  theme_bw()+
+  theme(axis.text=element_text(color="black"))+
+  facet_wrap(~index, ncol=2, scales="free")+
+  xlab("Global Human Modification")+
+  ylab("MoB variable")+
+  ggtitle(paste0("C) beta scale across all BCRs"))+
+  scale_color_brewer(palette = "Spectral")+
+  guides(color=guide_legend(title="Grain size"))
 
-mod <- lm(value ~ ghm, data=S_test2)
+lm_all_beta
 
-newdat <- tibble(ghm = seq(0, 1, length.out=100)) 
+gam_all_beta <- all_raw_data_beta_S %>%
+  dplyr::filter(scale=="alpha") %>%
+  dplyr::filter(checklists_per_grid==10) %>%
+  bind_rows(all_raw_data_beta_S_PIE %>%
+              dplyr::filter(scale=="alpha") %>%
+              dplyr::filter(checklists_per_grid==10)) %>%
+  bind_rows(all_raw_data_beta_S_n %>%
+              dplyr::filter(scale=="alpha") %>%
+              dplyr::filter(checklists_per_grid==10)) %>%
+  mutate(scale="beta") %>%
+  mutate(index=gsub("beta_", "", index)) %>%
+  ggplot(., aes(x=ghm, y=mean_value, color=as.factor(grid_size)))+
+  geom_smooth(method="gam", se=FALSE)+
+  theme_bw()+
+  theme(axis.text=element_text(color="black"))+
+  facet_wrap(~index, ncol=2, scales="free")+
+  xlab("Global Human Modification")+
+  ylab("MoB variable")+
+  ggtitle(paste0("C) beta scale across all BCRs"))+
+  scale_color_brewer(palette = "Spectral")+
+  guides(color=guide_legend(title="Grain size"))
 
-prediction2 <- tibble(ghm = seq(0, 1, length.out=100),
-                     value=predict(mod, newdata=newdat),
-                     value_se=predict(mod, newdata=newdat, se.fit=TRUE)$se.fit)
+gam_all_beta
 
-ggplot(prediction2, aes(x=ghm, y=value))+
-  geom_line()+
-  geom_line(aes(x=ghm, y=value-value_se), linetype="dashed")+
-  geom_line(aes(x=ghm, y=value+value_se), linetype="dashed")
 
-# now collapse by each sample_level
-# across the bootstrapped results
-get_mean_relationship <- function(sample_level){
-  
-  temp <- dat %>%
-    dplyr::filter(checklists_per_grid==sample_level)
-  
-  # apply for each grid size
-  across_grids <- function(grid_size){
-    
-    temp2 <- temp %>%
-      ungroup() %>%
-      dplyr::filter(grid_size==grid_level)
-    
-    S_test <- temp2 %>%
-      dplyr::filter(index=="S") %>%
-      dplyr::filter(scale=="alpha")
-    
-    ggplot(S_test, aes(x=ghm, y=value, group=draw))+
-      geom_smooth(method="lm", se=FALSE)
-    
-    mod <- lm(value ~ ghm, data=S_test)
-    
-    newdat <- tibble(ghm = seq(0, 1, length.out=100)) 
-    
-    prediction <- tibble(ghm = seq(0, 1, length.out=100),
-                         value=predict(mod, newdata=newdat),
-                         valeu_se=predict(mod, newdata=newdat, se.fit=TRUE)$se.fit)
-    
-    
-      mutate(predict(mod, newdata=ghm))
-    
-      tidybayes::add_fitted_draws(mod,
-                                  re_formula = NA,
-                                  scale = "response", 
-                                  n = 1000) %>%
-      dplyr::mutate(index=index_name) %>%
-      dplyr::mutate(scale=scale_name) %>%
-      dplyr::mutate(level="fixed_effects")
-  }
-  
-  
-  
-}
+lm_all_alpha + lm_all_gamma + lm_all_beta + plot_layout(ncol=1)
+
+ggsave("Figures/lm_alpha_gamma_beta.png", height=8.7, width=6.7, units="in")
+
+gam_all_alpha + gam_all_gamma + gam_all_beta + plot_layout(ncol=1)
+
+ggsave("Figures/gam_alpha_gamma_beta.png", height=8.7, width=6.7, units="in")
+
+
+
+
+
+
