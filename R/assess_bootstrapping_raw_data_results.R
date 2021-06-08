@@ -198,6 +198,7 @@ summarize_boot_results <- function(BCR_number, index_name){
   # across 100 different draws
   # maybe a better way to do this?
   summary <- temp_dat %>%
+    mutate(ghm=round(ghm, digits=2)) %>%
     group_by(scale, index, grid_size, checklists_per_grid, ghm) %>%
     summarize(mean_value=mean(value)) %>%
     mutate(BCR_CODE=BCR_number)
