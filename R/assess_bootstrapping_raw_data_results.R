@@ -230,170 +230,532 @@ all_raw_data_beta_S_PIE <- bind_rows(lapply_with_error(bcr_list, function(x){sum
 ########### PLOT RESULTS FOR ALL BCRS at once #####
 ###################################################
 # First for "S"
-lm_S <- all_raw_data_S %>%
-  bind_rows(all_raw_data_beta_S %>%
-              dplyr::filter(index=="beta_S") %>%
-              mutate(scale="beta")) %>%
-  mutate(scale=factor(scale, levels=c("alpha", "gamma", "beta"))) %>%
-  ggplot(., aes(x=ghm, y=mean_value, 
-                color=as.factor(grid_size), group=as.factor(grid_size)))+
-  geom_smooth(method="lm", se=FALSE)+
-  theme_bw()+
-  theme(axis.text=element_text(color="black"))+
-  facet_wrap(~scale, scales="free")+
-  xlab("Global Human Modification")+
-  ylab("S")+
-  scale_color_brewer(palette = "Spectral")+
-  guides(color=guide_legend(title="Grain size"))+
-  ggtitle("A")+
-  theme(legend.position="none")
-
-lm_S
-
 gam_S <- all_raw_data_S %>%
   bind_rows(all_raw_data_beta_S %>%
               dplyr::filter(index=="beta_S") %>%
               mutate(scale="beta")) %>%
   mutate(scale=factor(scale, levels=c("alpha", "gamma", "beta"))) %>%
+  dplyr::filter(grid_size==0.5) %>%
   ggplot(., aes(x=ghm, y=mean_value, 
-                color=as.factor(grid_size), group=as.factor(grid_size)))+
-  geom_smooth(method="gam", se=FALSE)+
+                color=as.factor(scale), group=as.factor(scale)))+
+  geom_smooth(method="gam", se=TRUE)+
   theme_bw()+
   theme(axis.text=element_text(color="black"))+
-  facet_wrap(~scale, scales="free")+
+  #facet_wrap(~scale)+
   xlab("Global Human Modification")+
   ylab("S")+
-  scale_color_brewer(palette = "Spectral")+
+  scale_color_brewer(palette = "Set1")+
   guides(color=guide_legend(title="Grain size"))+
-  ggtitle("A")+
+  ggtitle("(A)")+
   theme(legend.position="none")
 
 gam_S
 
 # Now repeat that but for S_n
-lm_S_n <- all_raw_data_S_n %>%
-  bind_rows(all_raw_data_beta_S_n %>%
-              dplyr::filter(index=="beta_S_n") %>%
-              mutate(scale="beta")) %>%
-  mutate(scale=factor(scale, levels=c("alpha", "gamma", "beta"))) %>%
-  ggplot(., aes(x=ghm, y=mean_value, 
-                color=as.factor(grid_size), group=as.factor(grid_size)))+
-  geom_smooth(method="lm", se=FALSE)+
-  theme_bw()+
-  theme(axis.text=element_text(color="black"))+
-  facet_wrap(~scale, scales="free")+
-  xlab("Global Human Modification")+
-  ylab("S_n")+
-  scale_color_brewer(palette = "Spectral")+
-  guides(color=guide_legend(title="Grain size"))+
-  ggtitle("B")+
-  theme(legend.position="none")
-
-lm_S_n
-
 gam_S_n <- all_raw_data_S_n %>%
   bind_rows(all_raw_data_beta_S_n %>%
               dplyr::filter(index=="beta_S_n") %>%
               mutate(scale="beta")) %>%
   mutate(scale=factor(scale, levels=c("alpha", "gamma", "beta"))) %>%
+  dplyr::filter(grid_size==0.5) %>%
   ggplot(., aes(x=ghm, y=mean_value, 
-                color=as.factor(grid_size), group=as.factor(grid_size)))+
-  geom_smooth(method="gam", se=FALSE)+
+                color=as.factor(scale), group=as.factor(scale)))+
+  geom_smooth(method="gam", se=TRUE)+
   theme_bw()+
   theme(axis.text=element_text(color="black"))+
-  facet_wrap(~scale, scales="free")+
+  #facet_wrap(~scale)+
   xlab("Global Human Modification")+
   ylab("S_n")+
-  scale_color_brewer(palette = "Spectral")+
+  scale_color_brewer(palette = "Set1")+
   guides(color=guide_legend(title="Grain size"))+
-  ggtitle("B")+
+  ggtitle("(B)")+
   theme(legend.position="none")
 
 gam_S_n
 
 # Now repeat that but for S_PIE
-lm_S_PIE <- all_raw_data_S_PIE %>%
-  bind_rows(all_raw_data_beta_S_PIE %>%
-              dplyr::filter(index=="beta_S_PIE") %>%
-              mutate(scale="beta")) %>%
-  mutate(scale=factor(scale, levels=c("alpha", "gamma", "beta"))) %>%
-  ggplot(., aes(x=ghm, y=mean_value, 
-                color=as.factor(grid_size), group=as.factor(grid_size)))+
-  geom_smooth(method="lm", se=FALSE)+
-  theme_bw()+
-  theme(axis.text=element_text(color="black"))+
-  facet_wrap(~scale, scales="free")+
-  xlab("Global Human Modification")+
-  ylab("S_PIE")+
-  scale_color_brewer(palette = "Spectral")+
-  guides(color=guide_legend(title="Grain size"))+
-  ggtitle("C")+
-  theme(legend.position="none")
-
-lm_S_PIE
-
 gam_S_PIE <- all_raw_data_S_PIE %>%
   bind_rows(all_raw_data_beta_S_PIE %>%
               dplyr::filter(index=="beta_S_PIE") %>%
               mutate(scale="beta")) %>%
   mutate(scale=factor(scale, levels=c("alpha", "gamma", "beta"))) %>%
+  dplyr::filter(grid_size==0.5) %>%
   ggplot(., aes(x=ghm, y=mean_value, 
-                color=as.factor(grid_size), group=as.factor(grid_size)))+
-  geom_smooth(method="gam", se=FALSE)+
+                color=as.factor(scale), group=as.factor(scale)))+
+  geom_smooth(method="gam", se=TRUE)+
   theme_bw()+
   theme(axis.text=element_text(color="black"))+
-  facet_wrap(~scale, scales="free")+
+  #facet_wrap(~scale)+
   xlab("Global Human Modification")+
   ylab("S_PIE")+
-  scale_color_brewer(palette = "Spectral")+
+  scale_color_brewer(palette = "Set1")+
   guides(color=guide_legend(title="Grain size"))+
-  ggtitle("C")+
-  theme(legend.position="none")
+  ggtitle("(C)")+
+  theme(legend.position="bottom")
 
 gam_S_PIE
 
 # ONE MORE TIME, but for N
-lm_N <- all_raw_data_N %>%
-  ggplot(., aes(x=ghm, y=mean_value, 
-                color=as.factor(grid_size), group=as.factor(grid_size)))+
-  geom_smooth(method="lm", se=FALSE)+
-  theme_bw()+
-  theme(axis.text=element_text(color="black"))+
-  facet_wrap(~scale, scales="free")+
-  xlab("Global Human Modification")+
-  ylab("N")+
-  scale_color_brewer(palette = "Spectral")+
-  guides(color=guide_legend(title="Grain size"))+
-  ggtitle("D")+
-  theme(legend.position="bottom")
-
-lm_N
-
 gam_N <- all_raw_data_N %>%
+  dplyr::filter(grid_size==0.5) %>%
   ggplot(., aes(x=ghm, y=mean_value, 
-                color=as.factor(grid_size), group=as.factor(grid_size)))+
-  geom_smooth(method="gam", se=FALSE)+
+                color=as.factor(scale), group=as.factor(scale)))+
+  geom_smooth(method="gam", se=TRUE)+
   theme_bw()+
   theme(axis.text=element_text(color="black"))+
-  facet_wrap(~scale, scales="free")+
+  #facet_wrap(~scale)+
   xlab("Global Human Modification")+
   ylab("N")+
-  scale_color_brewer(palette = "Spectral")+
+  scale_color_brewer(palette = "Set1")+
   guides(color=guide_legend(title="Grain size"))+
-  ggtitle("D")+
-  theme(legend.position="bottom")
+  ggtitle("(D)")+
+  theme(legend.position="none")
 
 gam_N
 
 # Put plots together into one
-lm_S + lm_S_n + lm_S_PIE + lm_N + plot_layout(ncol=2)
+gam_S + gam_S_n + gam_S_PIE + gam_N + plot_layout(ncol=2)
 
-ggsave("Figures/lm_alpha_gamma_v1.png", width=8.5, height=6.8, units="in")
+ggsave("Figures/0.5_degree_results_only.png", width=8.5, height=6.8, units="in")
+
+
+
+# Fit a model for each grid size
+# and loop through the three diversity variables possible
+model_function <- function(size_of_grid, data){
+  
+  tmp <- data %>%
+    ungroup() %>%
+    dplyr::filter(grid_size==size_of_grid) %>%
+    mutate(BCR_CODE=as.factor(as.integer(BCR_CODE)))
+  
+  metric_scale_function <- function(diversity_scale){
+    
+    tmp2 <- tmp %>%
+      dplyr::filter(scale==diversity_scale)
+    
+    ggplot(tmp2, aes(x=mean_value))+
+      geom_histogram()
+    
+    mod <- mgcv::gam(mean_value ~ s(ghm, bs="cs", k=10) + s(BCR_CODE, bs="re"), data=tmp2)
+    
+    summary(mod)
+    
+    newdat <- data.frame(ghm=seq(0, 1, by=0.01))
+    
+    predicted_values=data.frame(ghm=newdat$ghm,
+                                predicted_value=predict(mod, newdata = newdat, type="response",
+                                                        exclude="s(BCR_CODE)", newdata.guaranteed=TRUE),
+                                se=predict(mod, newdata = newdat, type="response", exclude="s(BCR_CODE)", 
+                                           newdata.guaranteed=TRUE, se.fit=TRUE)[2]$se.fit) %>%
+      mutate(upr_95=predicted_value+(1.96*se)) %>%
+      mutate(lwr_95=predicted_value-(1.96*se))
+    
+    ggplot(predicted_values, aes(x=ghm, y=predicted_value))+
+      geom_point()
+    
+    difference <- (1-(predicted_values %>%
+                        dplyr::filter(ghm==1) %>%
+                        .$predicted_value)/(predicted_values %>%
+                                              dplyr::filter(ghm==0) %>%
+                                              .$predicted_value))*100
+    
+    max_difference <- (1-(predicted_values %>%
+                            dplyr::filter(ghm==1) %>%
+                            .$predicted_value)/(predicted_values %>%
+                                                  .$predicted_value %>%
+                                                  max(.)))*100
+    
+    max_ghm <- predicted_values %>%
+      arrange(desc(predicted_value)) %>%
+      slice(1) %>%
+      .$ghm
+    
+    summary_df <- predicted_values %>%
+      mutate(difference=difference) %>%
+      mutate(max_difference=max_difference) %>%
+      mutate(max_ghm=max_ghm) %>%
+      mutate(grain_size=size_of_grid) %>%
+      mutate(number_of_obs=summary(mod)$n) %>%
+      mutate(p_value=summary(mod)$s.table[1,4]) %>%
+      mutate(scale=diversity_scale)
+    
+    return(summary_df)
+    
+  }
+  
+  temp_results <- bind_rows(lapply(unique(tmp$scale), metric_scale_function))
+  
+}
+
+modelled_data_S <- bind_rows(lapply(unique(all_raw_data_S$grid_size), function(x){model_function(x, all_raw_data_S)})) %>%
+  mutate(response="S")
+modelled_data_S_n <- bind_rows(lapply(unique(all_raw_data_S_n$grid_size), function(x){model_function(x, all_raw_data_S_n)})) %>%
+  mutate(response="S_n")
+modelled_data_N <- bind_rows(lapply(unique(all_raw_data_N$grid_size), function(x){model_function(x, all_raw_data_N)})) %>%
+  mutate(response="N")
+modelled_data_S_PIE <- bind_rows(lapply(unique(all_raw_data_S_PIE$grid_size), function(x){model_function(x, all_raw_data_S_PIE)})) %>%
+  mutate(response="S_PIE")
+modelled_data_beta_S <- bind_rows(lapply(unique(all_raw_data_S$grid_size), function(x){model_function(x, all_raw_data_beta_S)})) %>%
+  mutate(response="S") %>%
+  mutate(scale="beta")
+modelled_data_beta_S_n <- bind_rows(lapply(unique(all_raw_data_S_n$grid_size), function(x){model_function(x, all_raw_data_beta_S_n)})) %>%
+  mutate(response="S_n") %>%
+  mutate(scale="beta")
+modelled_data_beta_S_PIE <- bind_rows(lapply(unique(all_raw_data_S_PIE$grid_size), function(x){model_function(x, all_raw_data_beta_S_PIE)})) %>%
+  mutate(response="S_PIE") %>%
+  mutate(scale="beta")
+  
+
+modelled_data_results <- modelled_data_S %>%
+  bind_rows(modelled_data_S_n) %>%
+  bind_rows(modelled_data_N) %>%
+  bind_rows(modelled_data_S_PIE) %>%
+  bind_rows(modelled_data_beta_S) %>%
+  bind_rows(modelled_data_beta_S_n) %>%
+  bind_rows(modelled_data_beta_S_PIE)
+
+##########################################
+##########################################
+######## NOW PLOT MODELLED RESULTS
+##########################################
+##########################################
+gam_S <- modelled_data_results %>%
+  dplyr::filter(response=="S") %>%
+  mutate(scale=factor(scale, levels=c("alpha", "gamma", "beta"))) %>%
+  dplyr::filter(grain_size==0.5) %>%
+  ggplot(.)+
+  geom_ribbon(aes(x=ghm, y=predicted_value, ymax=upr_95, ymin=lwr_95, fill=as.factor(scale)), alpha=0.6)+
+  geom_line(aes(x=ghm, y=predicted_value, 
+                  color=as.factor(scale)), size=1.2)+
+  #geom_smooth(method="gam", se=TRUE)+
+  theme_bw()+
+  theme(axis.text=element_text(color="black"))+
+  #facet_wrap(~scale)+
+  xlab("Global Human Modification")+
+  ylab("S")+
+  scale_color_brewer(palette = "Set1")+
+  scale_fill_brewer(palette = "Set1")+
+  guides(color=guide_legend(title="Grain size"))+
+  ggtitle("(A)")+
+  theme(legend.position="none")
+
+gam_S
+
+gam_S_n <- modelled_data_results %>%
+  dplyr::filter(response=="S_n") %>%
+  mutate(scale=factor(scale, levels=c("alpha", "gamma", "beta"))) %>%
+  dplyr::filter(grain_size==0.5) %>%
+  ggplot(.)+
+  geom_ribbon(aes(x=ghm, y=predicted_value, ymax=upr_95, ymin=lwr_95, fill=as.factor(scale)), alpha=0.6)+
+  geom_line(aes(x=ghm, y=predicted_value, 
+                color=as.factor(scale)), size=1.2)+
+  #geom_smooth(method="gam", se=TRUE)+
+  theme_bw()+
+  theme(axis.text=element_text(color="black"))+
+  #facet_wrap(~scale)+
+  xlab("Global Human Modification")+
+  ylab("S_n")+
+  scale_color_brewer(palette = "Set1")+
+  scale_fill_brewer(palette = "Set1")+
+  guides(color=guide_legend(title="Grain size"))+
+  ggtitle("(B)")+
+  theme(legend.position="none")
+
+gam_S_n
+
+gam_S_PIE <- modelled_data_results %>%
+  dplyr::filter(response=="S_PIE") %>%
+  mutate(scale=factor(scale, levels=c("alpha", "gamma", "beta"))) %>%
+  dplyr::filter(grain_size==0.5) %>%
+  ggplot(.)+
+  geom_ribbon(aes(x=ghm, y=predicted_value, ymax=upr_95, ymin=lwr_95, fill=as.factor(scale)), alpha=0.6)+
+  geom_line(aes(x=ghm, y=predicted_value, 
+                color=as.factor(scale)), size=1.2)+
+  #geom_smooth(method="gam", se=TRUE)+
+  theme_bw()+
+  theme(axis.text=element_text(color="black"))+
+  #facet_wrap(~scale)+
+  xlab("Global Human Modification")+
+  ylab("S_PIE")+
+  scale_color_brewer(palette = "Set1")+
+  scale_fill_brewer(palette = "Set1")+
+  guides(color=guide_legend(title="Grain size"))+
+  guides(fill=FALSE)+
+  ggtitle("(C)")+
+  theme(legend.position="bottom")
+
+gam_S_PIE
+
+gam_N <- modelled_data_results %>%
+  dplyr::filter(response=="N") %>%
+  mutate(scale=factor(scale, levels=c("alpha", "gamma"))) %>%
+  dplyr::filter(grain_size==0.5) %>%
+  ggplot(.)+
+  geom_ribbon(aes(x=ghm, y=predicted_value, ymax=upr_95, ymin=lwr_95, fill=as.factor(scale)), alpha=0.6)+
+  geom_line(aes(x=ghm, y=predicted_value, 
+                color=as.factor(scale)), size=1.2)+
+  #geom_smooth(method="gam", se=TRUE)+
+  theme_bw()+
+  theme(axis.text=element_text(color="black"))+
+  #facet_wrap(~scale)+
+  xlab("Global Human Modification")+
+  ylab("N")+
+  scale_color_brewer(palette = "Set1")+
+  scale_fill_brewer(palette = "Set1")+
+  guides(color=guide_legend(title="Grain size"))+
+  ggtitle("(D)")+
+  theme(legend.position="none")
+
+gam_N
+
 
 # Put plots together into one
 gam_S + gam_S_n + gam_S_PIE + gam_N + plot_layout(ncol=2)
 
-ggsave("Figures/gam_alpha_gamma_v1.png", width=8.5, height=6.8, units="in")
+ggsave("Figures/0.5_degree_results_only.png", width=8.5, height=6.8, units="in")
+
+
+
+
+# Make a visualization showing the spatial scale effect and robustness of the results
+# to spatial grain
+gam_S_all_grids <- modelled_data_results %>%
+  dplyr::filter(response=="S") %>%
+  mutate(scale=factor(scale, levels=c("alpha", "gamma", "beta"))) %>%
+  ggplot(., aes(x=ghm, y=predicted_value, 
+                color=as.factor(grain_size), group=as.factor(grain_size)))+
+  geom_line(size=1.2)+
+  theme_bw()+
+  theme(axis.text=element_text(color="black"))+
+  facet_wrap(~scale, scales="free", ncol=1)+
+  xlab("Global Human Modification")+
+  ylab("S")+
+  scale_color_brewer(palette = "Spectral")+
+  guides(color=guide_legend(title="Grain size"))+
+  ggtitle("(A)")+
+  theme(legend.position="bottom")
+
+gam_S_all_grids
+
+# plot the 'difference' as a function of grain size
+max_difference_S <- modelled_data_results %>%
+  dplyr::filter(response=="S") %>%
+  mutate(scale=factor(scale, levels=c("alpha", "gamma", "beta"))) %>%
+  dplyr::select(scale, grain_size, max_difference) %>%
+  distinct() %>%
+  ggplot(., aes(x=grain_size, y=max_difference))+
+  geom_point()+
+  geom_smooth(method="loess")+
+  facet_wrap(~scale, scales="free", ncol=1)+
+  xlab("Grain size")+
+  ylab("Maximum difference (%) in S")+
+  theme_bw()+
+  ggtitle("(B)")+
+  theme(axis.text=element_text(color="black"))
+
+max_difference_S
+
+gam_S_all_grids + max_difference_S + plot_layout(ncol=2)
+
+ggsave("Figures/S_grain_size_results.png", width=6.8, height=8.6, units="in")
+
+# Make a visualization showing the spatial scale effect and robustness of the results
+# to spatial scale
+gam_S_n_all_grids <- modelled_data_results %>%
+  dplyr::filter(response=="S_n") %>%
+  mutate(scale=factor(scale, levels=c("alpha", "gamma", "beta"))) %>%
+  ggplot(., aes(x=ghm, y=predicted_value, 
+                color=as.factor(grain_size), group=as.factor(grain_size)))+
+  geom_line(size=1.2)+
+  theme_bw()+
+  theme(axis.text=element_text(color="black"))+
+  facet_wrap(~scale, scales="free", ncol=1)+
+  xlab("Global Human Modification")+
+  ylab("S_n")+
+  scale_color_brewer(palette = "Spectral")+
+  guides(color=guide_legend(title="Grain size"))+
+  ggtitle("(A)")+
+  theme(legend.position="bottom")
+
+gam_S_n_all_grids
+
+# plot the 'difference' as a function of grain size
+max_difference_S_n <- modelled_data_results %>%
+  dplyr::filter(response=="S_n") %>%
+  mutate(scale=factor(scale, levels=c("alpha", "gamma", "beta"))) %>%
+  dplyr::select(scale, grain_size, max_difference) %>%
+  distinct() %>%
+  ggplot(., aes(x=grain_size, y=max_difference))+
+  geom_point()+
+  geom_smooth(method="loess")+
+  facet_wrap(~scale, scales="free", ncol=1)+
+  xlab("Grain size")+
+  ylab("Maximum difference (%) in S_N")+
+  theme_bw()+
+  ggtitle("(B)")+
+  theme(axis.text=element_text(color="black"))
+
+max_difference_S_n
+
+gam_S_n_all_grids + max_difference_S_n + plot_layout(ncol=2)
+
+ggsave("Figures/S_n_grain_size_results.png", width=6.8, height=8.6, units="in")
+
+
+# Make a visualization showing the spatial scale effect and robustness of the results
+# to spatial scale
+gam_S_PIE_all_grids <- modelled_data_results %>%
+  dplyr::filter(response=="S_PIE") %>%
+  mutate(scale=factor(scale, levels=c("alpha", "gamma", "beta"))) %>%
+  ggplot(., aes(x=ghm, y=predicted_value, 
+                color=as.factor(grain_size), group=as.factor(grain_size)))+
+  geom_line(size=1.2)+
+  theme_bw()+
+  theme(axis.text=element_text(color="black"))+
+  facet_wrap(~scale, scales="free", ncol=1)+
+  xlab("Global Human Modification")+
+  ylab("S_PIE")+
+  scale_color_brewer(palette = "Spectral")+
+  guides(color=guide_legend(title="Grain size"))+
+  ggtitle("(A)")+
+  theme(legend.position="bottom")
+
+gam_S_PIE_all_grids
+
+# plot the 'difference' as a function of grain size
+max_difference_S_PIE <- modelled_data_results %>%
+  dplyr::filter(response=="S_PIE") %>%
+  mutate(scale=factor(scale, levels=c("alpha", "gamma", "beta"))) %>%
+  dplyr::select(scale, grain_size, max_difference) %>%
+  distinct() %>%
+  ggplot(., aes(x=grain_size, y=max_difference))+
+  geom_point()+
+  geom_smooth(method="loess")+
+  facet_wrap(~scale, scales="free", ncol=1)+
+  xlab("Grain size")+
+  ylab("Maximum difference (%) in S_PIE")+
+  theme_bw()+
+  ggtitle("(B)")+
+  theme(axis.text=element_text(color="black"))
+
+max_difference_S_PIE
+
+gam_S_PIE_all_grids + max_difference_S_PIE + plot_layout(ncol=2)
+
+ggsave("Figures/S_PIE_grain_size_results.png", width=6.8, height=8.6, units="in")
+
+# Make a visualization showing the spatial scale effect and robustness of the results
+# to spatial scale
+gam_N_all_grids <- modelled_data_results %>%
+  dplyr::filter(response=="N") %>%
+  mutate(scale=factor(scale, levels=c("alpha", "gamma"))) %>%
+  ggplot(., aes(x=ghm, y=predicted_value, 
+                color=as.factor(grain_size), group=as.factor(grain_size)))+
+  geom_line(size=1.2)+
+  theme_bw()+
+  theme(axis.text=element_text(color="black"))+
+  facet_wrap(~scale, scales="free", ncol=1)+
+  xlab("Global Human Modification")+
+  ylab("N")+
+  scale_color_brewer(palette = "Spectral")+
+  guides(color=guide_legend(title="Grain size"))+
+  ggtitle("(A)")+
+  theme(legend.position="bottom")
+
+gam_N_all_grids
+
+# plot the 'difference' as a function of grain size
+max_difference_N <- modelled_data_results %>%
+  dplyr::filter(response=="N") %>%
+  mutate(scale=factor(scale, levels=c("alpha", "gamma"))) %>%
+  dplyr::select(scale, grain_size, max_difference) %>%
+  distinct() %>%
+  ggplot(., aes(x=grain_size, y=max_difference))+
+  geom_point()+
+  geom_smooth(method="loess")+
+  facet_wrap(~scale, scales="free", ncol=1)+
+  xlab("Grain size")+
+  ylab("Maximum difference (%) in N")+
+  theme_bw()+
+  ggtitle("(B)")+
+  theme(axis.text=element_text(color="black"))
+
+max_difference_N
+
+gam_N_all_grids + max_difference_N + plot_layout(ncol=2)
+
+ggsave("Figures/N_grain_size_results.png", width=6.8, height=8.6, units="in")
+
+
+# SUMMARIZE SOME STUFF FOR TEXTUAL DESCRIPTION OF EMPIRICAL PATTERNS...
+modelled_data_results %>%
+  dplyr::select(6:13) %>%
+  distinct() %>%
+  group_by(response, scale) %>%
+  summarize(mean_max_ghm=mean(max_ghm),
+            sd_max_ghm=sd(max_ghm))
+
+modelled_data_results %>%
+  dplyr::select(6:13) %>%
+  distinct() %>%
+  group_by(response, scale) %>%
+  summarize(mean_percent_change=mean(max_difference),
+            sd_percent_change=sd(max_difference))
+
+modelled_data_results %>%
+  dplyr::select(6:13) %>%
+  dplyr::filter(grain_size==0.5) %>%
+  distinct()
+
+modelled_data_results %>%
+  dplyr::select(6:13) %>%
+  distinct() %>%
+  ggplot(., aes(x=response, y=max_ghm, fill=scale))+
+  geom_boxplot(position=position_dodge())+
+  theme_bw()+
+  coord_flip()
+
+modelled_data_results %>%
+  dplyr::select(6:13) %>%
+  dplyr::filter(scale %in% c("alpha", "gamma")) %>%
+  distinct() %>%
+  ggplot(., aes(x=response, y=max_difference, fill=scale))+
+  geom_boxplot(position=position_dodge())+
+  theme_bw()+
+  theme(axis.text=element_text(color="black"))+
+  coord_flip()+
+  scale_fill_brewer(palette = "Set1")+
+  xlab("Biodiversity component")+
+  ylab("Maximum difference (%) in diversity change along the ghm gradient")
+
+ggsave("Figures/maximum_difference_figure.png", width=6.8, height=5.6, units="in")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+###############################################
+############ ALTERNATIVE VISUALIATION THAT ISN"T AS GOOD
+########################################################
+
+
+
 
 # Now for beta
 lm_S_PIE_beta <- all_raw_data_beta_S_PIE %>%
@@ -600,6 +962,104 @@ ggsave("Figures/gam_alpha_gamma_beta.png", height=8.7, width=6.7, units="in")
 
 
 
+
+
+
+
+
+
+
+
+#######################################################################
+#######################################################################
+########### VISUALIZATION WITH LM instead of GAM ######################
+#######################################################################
+# OLD STUFF NOT USED, BUT SAVING FOR NOW
+# First for "S"
+lm_S <- all_raw_data_S %>%
+  bind_rows(all_raw_data_beta_S %>%
+              dplyr::filter(index=="beta_S") %>%
+              mutate(scale="beta")) %>%
+  mutate(scale=factor(scale, levels=c("alpha", "gamma", "beta"))) %>%
+  ggplot(., aes(x=ghm, y=mean_value, 
+                color=as.factor(grid_size), group=as.factor(grid_size)))+
+  geom_smooth(method="lm", se=FALSE)+
+  theme_bw()+
+  theme(axis.text=element_text(color="black"))+
+  facet_wrap(~scale, scales="free")+
+  xlab("Global Human Modification")+
+  ylab("S")+
+  scale_color_brewer(palette = "Spectral")+
+  guides(color=guide_legend(title="Grain size"))+
+  ggtitle("A")+
+  theme(legend.position="none")
+
+lm_S
+
+# Now repeat that but for S_n
+lm_S_n <- all_raw_data_S_n %>%
+  bind_rows(all_raw_data_beta_S_n %>%
+              dplyr::filter(index=="beta_S_n") %>%
+              mutate(scale="beta")) %>%
+  mutate(scale=factor(scale, levels=c("alpha", "gamma", "beta"))) %>%
+  ggplot(., aes(x=ghm, y=mean_value, 
+                color=as.factor(grid_size), group=as.factor(grid_size)))+
+  geom_smooth(method="lm", se=FALSE)+
+  theme_bw()+
+  theme(axis.text=element_text(color="black"))+
+  facet_wrap(~scale, scales="free")+
+  xlab("Global Human Modification")+
+  ylab("S_n")+
+  scale_color_brewer(palette = "Spectral")+
+  guides(color=guide_legend(title="Grain size"))+
+  ggtitle("B")+
+  theme(legend.position="none")
+
+lm_S_n
+
+# Now repeat that but for S_PIE
+lm_S_PIE <- all_raw_data_S_PIE %>%
+  bind_rows(all_raw_data_beta_S_PIE %>%
+              dplyr::filter(index=="beta_S_PIE") %>%
+              mutate(scale="beta")) %>%
+  mutate(scale=factor(scale, levels=c("alpha", "gamma", "beta"))) %>%
+  ggplot(., aes(x=ghm, y=mean_value, 
+                color=as.factor(grid_size), group=as.factor(grid_size)))+
+  geom_smooth(method="lm", se=FALSE)+
+  theme_bw()+
+  theme(axis.text=element_text(color="black"))+
+  facet_wrap(~scale, scales="free")+
+  xlab("Global Human Modification")+
+  ylab("S_PIE")+
+  scale_color_brewer(palette = "Spectral")+
+  guides(color=guide_legend(title="Grain size"))+
+  ggtitle("C")+
+  theme(legend.position="none")
+
+lm_S_PIE
+
+# ONE MORE TIME, but for N
+lm_N <- all_raw_data_N %>%
+  ggplot(., aes(x=ghm, y=mean_value, 
+                color=as.factor(grid_size), group=as.factor(grid_size)))+
+  geom_smooth(method="lm", se=FALSE)+
+  theme_bw()+
+  theme(axis.text=element_text(color="black"))+
+  facet_wrap(~scale, scales="free")+
+  xlab("Global Human Modification")+
+  ylab("N")+
+  scale_color_brewer(palette = "Spectral")+
+  guides(color=guide_legend(title="Grain size"))+
+  ggtitle("D")+
+  theme(legend.position="bottom")
+
+lm_N
+
+
+# Put plots together into one
+lm_S + lm_S_n + lm_S_PIE + lm_N + plot_layout(ncol=2)
+
+ggsave("Figures/lm_alpha_gamma_v1.png", width=8.5, height=6.8, units="in")
 
 
 
