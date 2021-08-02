@@ -52,6 +52,17 @@ ggplot()+
 
 ggsave("Figures/map_of_points_in_USA.png", height=4.3, width=5.4, units="in")
 
+ggplot()+
+  geom_sf(data=us)+
+  theme_bw()+
+  theme(panel.grid.major=element_blank())+
+  geom_sf(data=points_sf, aes(color=ghm), size=0.4)+
+  scale_color_viridis_c(option="inferno")+
+  xlim(85, 75)+
+  ylim(40, 45)+
+  theme(legend.position="bottom")+
+  theme(axis.text=element_text(color="black"))
+
 # make dark version of figure for presentations
 ggplot()+
   geom_sf(data=us)+

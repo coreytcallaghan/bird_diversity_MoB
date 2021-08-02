@@ -30,6 +30,9 @@ ebird_data <- readRDS("Data/ebird_data_raw_May.RDS") %>%
                                "Hydrobatidae (Northern Storm-Petrels)", "Oceanitidae (Southern Storm-Petrels)")) %>%
   dplyr::filter(complete.cases(BCR_CODE))
 
+length(unique(ebird_data$SAMPLING_EVENT_IDENTIFIER))
+length(unique(ebird_data$COMMON_NAME))
+
 
 # get a list of BCRs
 bcr_list <- ebird_data %>%
@@ -422,7 +425,8 @@ modelled_data_results <- modelled_data_S %>%
 ##########################################
 gam_S <- modelled_data_results %>%
   dplyr::filter(response=="S") %>%
-  mutate(scale=factor(scale, levels=c("alpha", "gamma", "beta"))) %>%
+  dplyr::filter(scale != "beta") %>%
+  mutate(scale=factor(scale, levels=c("alpha", "gamma"))) %>%
   dplyr::filter(grain_size==0.5) %>%
   ggplot(.)+
   geom_ribbon(aes(x=ghm, y=predicted_value, ymax=upr_95, ymin=lwr_95, fill=as.factor(scale)), alpha=0.6)+
@@ -432,19 +436,20 @@ gam_S <- modelled_data_results %>%
   theme_bw()+
   theme(axis.text=element_text(color="black"))+
   #facet_wrap(~scale)+
-  xlab("Global Human Modification")+
+  xlab("")+
   ylab("S")+
   scale_color_brewer(palette = "Set1")+
   scale_fill_brewer(palette = "Set1")+
   guides(color=guide_legend(title="Grain size"))+
-  ggtitle("(A)")+
+  ggtitle("(B)")+
   theme(legend.position="none")
 
 gam_S
 
 gam_S_n <- modelled_data_results %>%
   dplyr::filter(response=="S_n") %>%
-  mutate(scale=factor(scale, levels=c("alpha", "gamma", "beta"))) %>%
+  dplyr::filter(scale != "beta") %>%
+  mutate(scale=factor(scale, levels=c("alpha", "gamma"))) %>%
   dplyr::filter(grain_size==0.5) %>%
   ggplot(.)+
   geom_ribbon(aes(x=ghm, y=predicted_value, ymax=upr_95, ymin=lwr_95, fill=as.factor(scale)), alpha=0.6)+
@@ -459,14 +464,15 @@ gam_S_n <- modelled_data_results %>%
   scale_color_brewer(palette = "Set1")+
   scale_fill_brewer(palette = "Set1")+
   guides(color=guide_legend(title="Grain size"))+
-  ggtitle("(B)")+
+  ggtitle("(D)")+
   theme(legend.position="none")
 
 gam_S_n
 
 gam_S_PIE <- modelled_data_results %>%
   dplyr::filter(response=="S_PIE") %>%
-  mutate(scale=factor(scale, levels=c("alpha", "gamma", "beta"))) %>%
+  dplyr::filter(scale != "beta") %>%
+  mutate(scale=factor(scale, levels=c("alpha", "gamma"))) %>%
   dplyr::filter(grain_size==0.5) %>%
   ggplot(.)+
   geom_ribbon(aes(x=ghm, y=predicted_value, ymax=upr_95, ymin=lwr_95, fill=as.factor(scale)), alpha=0.6)+
@@ -483,7 +489,7 @@ gam_S_PIE <- modelled_data_results %>%
   guides(color=guide_legend(title="Grain size"))+
   guides(fill=FALSE)+
   ggtitle("(C)")+
-  theme(legend.position="bottom")
+  theme(legend.position="none")
 
 gam_S_PIE
 
@@ -499,21 +505,39 @@ gam_N <- modelled_data_results %>%
   theme_bw()+
   theme(axis.text=element_text(color="black"))+
   #facet_wrap(~scale)+
-  xlab("Global Human Modification")+
+  xlab("")+
   ylab("N")+
   scale_color_brewer(palette = "Set1")+
   scale_fill_brewer(palette = "Set1")+
-  guides(color=guide_legend(title="Grain size"))+
-  ggtitle("(D)")+
+  guides(color=guide_legend(title=""))+
+  guides(fill=FALSE)+
+  ggtitle("(A)")+
   theme(legend.position="none")
 
 gam_N
 
+# make a beta figure
+beta_fig <- modelled_data_results %>%
+  dplyr::filter(response %in% c("S", "S_n", "S_PIE")) %>%
+  dplyr::filter(scale=="beta") %>%
+  dplyr::filter(grain_size==0.5) %>%
+  ggplot(.)+
+  geom_ribbon(aes(x=ghm, y=predicted_value, ymax=upr_95, ymin=lwr_95, group=response), fill="gray60")+
+  geom_line(aes(x=ghm, y=predicted_value, 
+                linetype=as.factor(response), group=as.factor(response)), size=1.2)+
+  theme_bw()+
+  theme(axis.text=element_text(color="black"))+
+  xlab("Global Human Modification")+
+  ylab("Beta diversity value")+
+  guides(linetype=guide_legend(title="Biodiversity metric:"))+
+  ggtitle("(E)")+
+  theme(legend.position="bottom")
+
 
 # Put plots together into one
-gam_S + gam_S_n + gam_S_PIE + gam_N + plot_layout(ncol=2)
+(gam_N | gam_S) / (gam_S_PIE | gam_S_n) / beta_fig + plot_layout(nrow=3)
 
-ggsave("Figures/0.5_degree_results_only.png", width=8.5, height=6.8, units="in")
+ggsave("Figures/0.5_degree_results_only.png", width=7.5, height=7.2, units="in")
 
 
 
@@ -534,7 +558,8 @@ gam_S_all_grids <- modelled_data_results %>%
   scale_color_brewer(palette = "Spectral")+
   guides(color=guide_legend(title="Grain size"))+
   ggtitle("(A)")+
-  theme(legend.position="bottom")
+  theme(legend.position="bottom")+
+  theme(legend.text=element_text(size=6))
 
 gam_S_all_grids
 
@@ -544,21 +569,23 @@ max_difference_S <- modelled_data_results %>%
   mutate(scale=factor(scale, levels=c("alpha", "gamma", "beta"))) %>%
   dplyr::select(scale, grain_size, max_difference) %>%
   distinct() %>%
-  ggplot(., aes(x=grain_size, y=max_difference))+
+  ggplot(., aes(x=grain_size, y=max_difference, color=as.factor(grain_size)))+
   geom_point()+
-  geom_smooth(method="loess")+
+  geom_smooth(method="loess", se=FALSE, color="black", linetype="dashed")+
   facet_wrap(~scale, scales="free", ncol=1)+
   xlab("Grain size")+
   ylab("Maximum difference (%) in S")+
+  scale_color_brewer(palette = "Spectral")+
   theme_bw()+
   ggtitle("(B)")+
-  theme(axis.text=element_text(color="black"))
+  theme(axis.text=element_text(color="black"))+
+  guides(color=FALSE)
 
 max_difference_S
 
 gam_S_all_grids + max_difference_S + plot_layout(ncol=2)
 
-ggsave("Figures/S_grain_size_results.png", width=6.8, height=8.6, units="in")
+ggsave("Figures/S_grain_size_results.png", width=7.4, height=8.6, units="in")
 
 # Make a visualization showing the spatial scale effect and robustness of the results
 # to spatial scale
@@ -576,7 +603,8 @@ gam_S_n_all_grids <- modelled_data_results %>%
   scale_color_brewer(palette = "Spectral")+
   guides(color=guide_legend(title="Grain size"))+
   ggtitle("(A)")+
-  theme(legend.position="bottom")
+  theme(legend.position="bottom")+
+  theme(legend.text=element_text(size=6))
 
 gam_S_n_all_grids
 
@@ -586,15 +614,17 @@ max_difference_S_n <- modelled_data_results %>%
   mutate(scale=factor(scale, levels=c("alpha", "gamma", "beta"))) %>%
   dplyr::select(scale, grain_size, max_difference) %>%
   distinct() %>%
-  ggplot(., aes(x=grain_size, y=max_difference))+
+  ggplot(., aes(x=grain_size, y=max_difference, color=as.factor(grain_size)))+
   geom_point()+
-  geom_smooth(method="loess")+
+  geom_smooth(method="loess", se=FALSE, color="black", linetype="dashed")+
   facet_wrap(~scale, scales="free", ncol=1)+
   xlab("Grain size")+
-  ylab("Maximum difference (%) in S_N")+
+  ylab("Maximum difference (%) in S_n")+
+  scale_color_brewer(palette = "Spectral")+
   theme_bw()+
   ggtitle("(B)")+
-  theme(axis.text=element_text(color="black"))
+  theme(axis.text=element_text(color="black"))+
+  guides(color=FALSE)
 
 max_difference_S_n
 
@@ -619,7 +649,8 @@ gam_S_PIE_all_grids <- modelled_data_results %>%
   scale_color_brewer(palette = "Spectral")+
   guides(color=guide_legend(title="Grain size"))+
   ggtitle("(A)")+
-  theme(legend.position="bottom")
+  theme(legend.position="bottom")+
+  theme(legend.text=element_text(size=6))
 
 gam_S_PIE_all_grids
 
@@ -629,15 +660,17 @@ max_difference_S_PIE <- modelled_data_results %>%
   mutate(scale=factor(scale, levels=c("alpha", "gamma", "beta"))) %>%
   dplyr::select(scale, grain_size, max_difference) %>%
   distinct() %>%
-  ggplot(., aes(x=grain_size, y=max_difference))+
+  ggplot(., aes(x=grain_size, y=max_difference, color=as.factor(grain_size)))+
   geom_point()+
-  geom_smooth(method="loess")+
+  geom_smooth(method="loess", se=FALSE, color="black", linetype="dashed")+
   facet_wrap(~scale, scales="free", ncol=1)+
   xlab("Grain size")+
   ylab("Maximum difference (%) in S_PIE")+
+  scale_color_brewer(palette = "Spectral")+
   theme_bw()+
   ggtitle("(B)")+
-  theme(axis.text=element_text(color="black"))
+  theme(axis.text=element_text(color="black"))+
+  guides(color=FALSE)
 
 max_difference_S_PIE
 
@@ -661,7 +694,8 @@ gam_N_all_grids <- modelled_data_results %>%
   scale_color_brewer(palette = "Spectral")+
   guides(color=guide_legend(title="Grain size"))+
   ggtitle("(A)")+
-  theme(legend.position="bottom")
+  theme(legend.position="bottom")+
+  theme(legend.text=element_text(size=6))
 
 gam_N_all_grids
 
@@ -671,15 +705,17 @@ max_difference_N <- modelled_data_results %>%
   mutate(scale=factor(scale, levels=c("alpha", "gamma"))) %>%
   dplyr::select(scale, grain_size, max_difference) %>%
   distinct() %>%
-  ggplot(., aes(x=grain_size, y=max_difference))+
+  ggplot(., aes(x=grain_size, y=max_difference, color=as.factor(grain_size)))+
   geom_point()+
-  geom_smooth(method="loess")+
+  geom_smooth(method="loess", se=FALSE, color="black", linetype="dashed")+
   facet_wrap(~scale, scales="free", ncol=1)+
   xlab("Grain size")+
   ylab("Maximum difference (%) in N")+
+  scale_color_brewer(palette = "Spectral")+
   theme_bw()+
   ggtitle("(B)")+
-  theme(axis.text=element_text(color="black"))
+  theme(axis.text=element_text(color="black"))+
+  guides(color=FALSE)
 
 max_difference_N
 
