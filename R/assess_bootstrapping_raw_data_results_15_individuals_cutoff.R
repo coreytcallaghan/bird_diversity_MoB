@@ -50,16 +50,16 @@ summarize_boot_results <- function(BCR_number, index_name){
   
   message(paste0("Summarizing data for BCR ", BCR_number))
   
-  file_list <- c(paste0("Intermediate_results/bootstrapping/grid_size_0.1/number_samples_10/BCR_", BCR_number, ".RDS"),
-                 paste0("Intermediate_results/bootstrapping/grid_size_0.2/number_samples_10/BCR_", BCR_number, ".RDS"),
-                 paste0("Intermediate_results/bootstrapping/grid_size_0.3/number_samples_10/BCR_", BCR_number, ".RDS"),
-                 paste0("Intermediate_results/bootstrapping/grid_size_0.4/number_samples_10/BCR_", BCR_number, ".RDS"),
-                 paste0("Intermediate_results/bootstrapping/grid_size_0.5/number_samples_10/BCR_", BCR_number, ".RDS"),
-                 paste0("Intermediate_results/bootstrapping/grid_size_0.6/number_samples_10/BCR_", BCR_number, ".RDS"),
-                 paste0("Intermediate_results/bootstrapping/grid_size_0.7/number_samples_10/BCR_", BCR_number, ".RDS"),
-                 paste0("Intermediate_results/bootstrapping/grid_size_0.8/number_samples_10/BCR_", BCR_number, ".RDS"),
-                 paste0("Intermediate_results/bootstrapping/grid_size_0.9/number_samples_10/BCR_", BCR_number, ".RDS"),
-                 paste0("Intermediate_results/bootstrapping/grid_size_1/number_samples_10/BCR_", BCR_number, ".RDS"))
+  file_list <- c(paste0("Intermediate_results/bootstrapping_15_individuals_cutoff/grid_size_0.1/number_samples_10/BCR_", BCR_number, ".RDS"),
+                 paste0("Intermediate_results/bootstrapping_15_individuals_cutoff/grid_size_0.2/number_samples_10/BCR_", BCR_number, ".RDS"),
+                 paste0("Intermediate_results/bootstrapping_15_individuals_cutoff/grid_size_0.3/number_samples_10/BCR_", BCR_number, ".RDS"),
+                 paste0("Intermediate_results/bootstrapping_15_individuals_cutoff/grid_size_0.4/number_samples_10/BCR_", BCR_number, ".RDS"),
+                 paste0("Intermediate_results/bootstrapping_15_individuals_cutoff/grid_size_0.5/number_samples_10/BCR_", BCR_number, ".RDS"),
+                 paste0("Intermediate_results/bootstrapping_15_individuals_cutoff/grid_size_0.6/number_samples_10/BCR_", BCR_number, ".RDS"),
+                 paste0("Intermediate_results/bootstrapping_15_individuals_cutoff/grid_size_0.7/number_samples_10/BCR_", BCR_number, ".RDS"),
+                 paste0("Intermediate_results/bootstrapping_15_individuals_cutoff/grid_size_0.8/number_samples_10/BCR_", BCR_number, ".RDS"),
+                 paste0("Intermediate_results/bootstrapping_15_individuals_cutoff/grid_size_0.9/number_samples_10/BCR_", BCR_number, ".RDS"),
+                 paste0("Intermediate_results/bootstrapping_15_individuals_cutoff/grid_size_1/number_samples_10/BCR_", BCR_number, ".RDS"))
   
   file.exists(file_list)
   
@@ -178,10 +178,10 @@ summarize_boot_results <- function(BCR_number, index_name){
                                 .$., read_data_0.9))
   
   dat_1 <- bind_rows(lapply(file_list[10] %>%
-                                as.data.frame() %>%
-                                mutate(exists=ifelse(file.exists(.)==TRUE, "yes", "no")) %>%
-                                dplyr::filter(exists=="yes") %>%
-                                .$., read_data_1))
+                              as.data.frame() %>%
+                              mutate(exists=ifelse(file.exists(.)==TRUE, "yes", "no")) %>%
+                              dplyr::filter(exists=="yes") %>%
+                              .$., read_data_1))
   dat <- bind_rows(dat_0.1,
                    dat_0.2,
                    dat_0.3,
@@ -208,7 +208,7 @@ summarize_boot_results <- function(BCR_number, index_name){
   
   return(summary)
   
- }
+}
 
 # make a fault tolerant lapply
 lapply_with_error <- function(X,FUN,...){    
@@ -408,7 +408,7 @@ modelled_data_beta_S_n <- bind_rows(lapply(unique(all_raw_data_S_n$grid_size), f
 modelled_data_beta_S_PIE <- bind_rows(lapply(unique(all_raw_data_S_PIE$grid_size), function(x){model_function(x, all_raw_data_beta_S_PIE)})) %>%
   mutate(response="S_PIE") %>%
   mutate(scale="beta")
-  
+
 
 modelled_data_results <- modelled_data_S %>%
   bind_rows(modelled_data_S_n) %>%
@@ -431,7 +431,7 @@ gam_S <- modelled_data_results %>%
   ggplot(.)+
   geom_ribbon(aes(x=ghm, y=predicted_value, ymax=upr_95, ymin=lwr_95, fill=as.factor(scale)), alpha=0.6)+
   geom_line(aes(x=ghm, y=predicted_value, 
-                  color=as.factor(scale)), size=1.2)+
+                color=as.factor(scale)), size=1.2)+
   #geom_smooth(method="gam", se=TRUE)+
   theme_bw()+
   theme(axis.text=element_text(color="black"))+
@@ -540,7 +540,7 @@ beta_fig
 # Put plots together into one
 (gam_N | gam_S) / (gam_S_n | gam_S_PIE) / beta_fig + plot_layout(nrow=3)
 
-ggsave("Figures/0.5_degree_results_only.png", width=7.5, height=7.2, units="in")
+ggsave("Figures/0.5_degree_results_only_15_individuals.png", width=7.5, height=7.2, units="in")
 
 
 
