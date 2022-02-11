@@ -588,7 +588,7 @@ max_difference_S
 
 gam_S_all_grids + max_difference_S + plot_layout(ncol=2)
 
-ggsave("Figures/S_grain_size_results.png", width=7.4, height=8.6, units="in")
+ggsave("Figures/S_grain_size_results_only_15_individuals.png", width=7.4, height=8.6, units="in")
 
 # Make a visualization showing the spatial scale effect and robustness of the results
 # to spatial scale
@@ -633,7 +633,7 @@ max_difference_S_n
 
 gam_S_n_all_grids + max_difference_S_n + plot_layout(ncol=2)
 
-ggsave("Figures/S_n_grain_size_results.png", width=6.8, height=8.6, units="in")
+ggsave("Figures/S_n_grain_size_results_only_15_individuals.png", width=7.4, height=8.6, units="in")
 
 
 # Make a visualization showing the spatial scale effect and robustness of the results
@@ -679,7 +679,7 @@ max_difference_S_PIE
 
 gam_S_PIE_all_grids + max_difference_S_PIE + plot_layout(ncol=2)
 
-ggsave("Figures/S_PIE_grain_size_results.png", width=6.8, height=8.6, units="in")
+ggsave("Figures/S_PIE_grain_size_results_only_15_individuals.png", width=7.4, height=8.6, units="in")
 
 # Make a visualization showing the spatial scale effect and robustness of the results
 # to spatial scale
@@ -724,7 +724,7 @@ max_difference_N
 
 gam_N_all_grids + max_difference_N + plot_layout(ncol=2)
 
-ggsave("Figures/N_grain_size_results.png", width=6.8, height=8.6, units="in")
+ggsave("Figures/N_grain_size_results_only_15_individuals.png", width=7.4, height=8.6, units="in")
 
 
 # SUMMARIZE SOME STUFF FOR TEXTUAL DESCRIPTION OF EMPIRICAL PATTERNS...
